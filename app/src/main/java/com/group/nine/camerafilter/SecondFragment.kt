@@ -96,13 +96,37 @@ class SecondFragment : Fragment() {
         return bmOverlay
     }
 
+    private fun findThresholdBB(faces: List<Face> ) : Int {
+        var threshold = 0
+        var t = 0
+        faces.forEach { face ->
+            t = face.boundingBox.width()*face.boundingBox.height()
+            threshold = Math.max(threshold, t)
+        }
+        return threshold/5;
+    }
+
     private fun renderBB(faces: List<Face> ){
+        var threshold = findThresholdBB(faces)
         faces.forEach { face ->
             Log.d("FACES:","Values:"+face.boundingBox.toString())
-            var outImage = Bitmap.createBitmap(bitImage,face.boundingBox.left,face.boundingBox.top,face.boundingBox.width(),face.boundingBox.height())
-            val rectangle = Rect(face.boundingBox.left,face.boundingBox.top,face.boundingBox.left+face.boundingBox.width(),face.boundingBox.top +face.boundingBox.height())
-            outImage = filter.processImage(outImage)
-            bitImage = overlayer(bitImage, outImage, rectangle)
+            if ((face.boundingBox.width()*face.boundingBox.height()) <= threshold) {
+                var outImage = Bitmap.createBitmap(
+                    bitImage,
+                    face.boundingBox.left,
+                    face.boundingBox.top,
+                    face.boundingBox.width(),
+                    face.boundingBox.height()
+                )
+                val rectangle = Rect(
+                    face.boundingBox.left,
+                    face.boundingBox.top,
+                    face.boundingBox.left + face.boundingBox.width(),
+                    face.boundingBox.top + face.boundingBox.height()
+                )
+                outImage = filter.processImage(outImage)
+                bitImage = overlayer(bitImage, outImage, rectangle)
+            }
         }
         activity?.runOnUiThread {
             outView.setImageBitmap(bitImage)
