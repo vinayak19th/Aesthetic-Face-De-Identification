@@ -48,13 +48,31 @@ class ImageFilter(blur_kernel : Int = 9,n_clusters:Int = 8, min_area :Int = 500,
             Core.KMEANS_PP_CENTERS,
             centers
         )
-        Log.d("KClusters","Labels Size"+labels.size().toString())
-        Log.d("KClusters","Centers Size"+centers.size().toString())
-        Log.d("KClusters","Flattened Image"+reshaped_image.size().height.toString())
-        for(i in 0 until reshaped_image.height()){
-            reshaped_image[1,i] = centers[labels[1,i]]
+        Log.d("KClusters","Labels Size | "+labels.size().toString())
+        Log.d("KClusters","Centers Size | "+centers.size().toString())
+        Log.d("KClusters","Flattened Image | "+reshaped_image.size().height.toString())
+        Log.d("KClusters","Image | "+imageMat.size().toString())
+        var value : DoubleArray;
+        value = DoubleArray(3)
+//        val s :DoubleArray = labels.get(1,0)
+//        Log.d("KClusters","Label Array | "+ s.get(0).toString())
+//        Log.d("KClusters","Index "+0.toString()+" | ValIndex"+labels.get(1,0).toString())
+        var r : Int = 0
+        for(i:Int in 0 until imageMat.rows()){
+            for(j:Int in 0 until imageMat.cols()){
+                var valindex : Int = labels.get(r,0).get(0).toInt()
+                value.set(0,centers.get(valindex,0).get(0)*255)
+                value.set(1,centers.get(valindex,1).get(0)*255)
+                value.set(2,centers.get(valindex,2).get(0)*255)
+                imageMat.put(i,j,value.get(0),value.get(1),value.get(2))
+                r++
+            }
         }
-        return face
+        val processedFace : Bitmap = face.copy(face.config, true)
+        Utils.matToBitmap(imageMat, processedFace)
+        Log.d("KClusters","Uploaded values"+reshaped_image.size().toString())
+//        reshaped_image= imageMat.reshape(1, imageMat.cols() * imageMat.rows())
+        return processedFace
     }
 }
 

@@ -1,0 +1,4 @@
+/home/vinayak/Android/Sdk/cmake/3.18.1/bin/ninja \
+  -C \
+  /mnt/d/git/CameraFilter/opencv/.cxx/Debug/n102v6o6/x86 \
+  opencv_jni_shared
