@@ -11,47 +11,16 @@ import org.opencv.core.TermCriteria
 import org.opencv.imgproc.Imgproc
 
 
-class ImageFilter(blur_kernel : Int = 9,n_clusters:Int = 8, min_area :Int = 500, poly_epsilon:Int = 10) {
-    fun processFace(face:Bitmap):Bitmap{
-        Log.d("OPENCV:","Started Face Processing")
-        val mat = Mat()
-        Utils.bitmapToMat(face, mat)
-        Log.d("OPENCV:","Converted Bitmap to Mat")
-        // Convert to grayscale
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY)
-        Log.d("OPENCV:","Converted Mat to grayscale")
-        // Make a mutable face to copy grayscale image
-        val grayBitmap = face.copy(face.config, true)
-        Utils.matToBitmap(mat, grayBitmap)
-        Log.d("OPENCV:","Converted Mat to Bitmap")
-        return grayBitmap
-    }
-    fun kmeansProcess(face:Bitmap):Bitmap {
+class ImageFilter(ablur_kernel : Int = 9,an_clusters:Int = 8, amin_area :Int = 500, apoly_epsilon:Int = 10) {
+    var n_clusters = an_clusters
+    var blur_kernel = ablur_kernel
+    var min_area = amin_area
+    var poly_epsilon = apoly_epsilon
+
+    fun processImage(face:Bitmap):Bitmap {
         val imageMat = Mat()
         Utils.bitmapToMat(face, imageMat)
-        Imgproc.cvtColor(imageMat, imageMat, Imgproc.COLOR_BGRA2BGR)
-        val reshaped_image: Mat = imageMat.reshape(1, imageMat.cols() * imageMat.rows())
-        val reshaped_image32f = Mat()
-        reshaped_image.convertTo(reshaped_image32f, CvType.CV_32F, 1.0 / 255.0)
-
-        val labels = Mat()
-        val criteria = TermCriteria(TermCriteria.COUNT, 100, 1.toDouble())
-        val centers = Mat()
-        val clusterCount = 5
-        val attempts = 1
-        Core.kmeans(
-            reshaped_image32f,
-            clusterCount,
-            labels,
-            criteria,
-            attempts,
-            Core.KMEANS_PP_CENTERS,
-            centers
-        )
-        Log.d("KClusters","Labels Size | "+labels.size().toString())
-        Log.d("KClusters","Centers Size | "+centers.size().toString())
-        Log.d("KClusters","Flattened Image | "+reshaped_image.size().height.toString())
-        Log.d("KClusters","Image | "+imageMat.size().toString())
+        val (centers,labels) = kmeansProcess(imageMat)
         var value : DoubleArray;
         value = DoubleArray(3)
 //        val s :DoubleArray = labels.get(1,0)
@@ -70,9 +39,46 @@ class ImageFilter(blur_kernel : Int = 9,n_clusters:Int = 8, min_area :Int = 500,
         }
         val processedFace : Bitmap = face.copy(face.config, true)
         Utils.matToBitmap(imageMat, processedFace)
-        Log.d("KClusters","Uploaded values"+reshaped_image.size().toString())
-//        reshaped_image= imageMat.reshape(1, imageMat.cols() * imageMat.rows())
         return processedFace
+    }
+    fun kmeansProcess(imageMat:Mat):Pair<Mat,Mat> {
+        Imgproc.cvtColor(imageMat, imageMat, Imgproc.COLOR_BGRA2BGR)
+        val reshaped_image: Mat = imageMat.reshape(1, imageMat.cols() * imageMat.rows())
+        val reshaped_image32f = Mat()
+        reshaped_image.convertTo(reshaped_image32f, CvType.CV_32F, 1.0 / 255.0)
+
+        val labels = Mat()
+        val criteria = TermCriteria(TermCriteria.COUNT, 100, 1.toDouble())
+        val centers = Mat()
+        val clusterCount = 5
+        val attempts = 1
+        Log.d("Kmeans","Clustering with Cluster Size "+n_clusters.toString())
+        Core.kmeans(
+            reshaped_image32f,
+            n_clusters,
+            labels,
+            criteria,
+            attempts,
+            Core.KMEANS_PP_CENTERS,
+            centers
+        )
+//        Log.d("KClusters","Labels Size | "+labels.size().toString())
+//        Log.d("KClusters","Centers Size | "+centers.size().toString())
+//        Log.d("KClusters","Flattened Image | "+reshaped_image.size().height.toString())
+//        Log.d("KClusters","Image | "+imageMat.size().toString())
+
+//        reshaped_image= imageMat.reshape(1, imageMat.cols() * imageMat.rows())
+        return Pair(centers,labels)
+    }
+    fun findContours(faceMat: Mat,centers:Mat){
+
+    }
+    //Setters
+    fun setClusterSize(cluster_size:Int){
+        n_clusters = cluster_size
+    }
+    fun setPolyEpsilon(apoly_epsilon:Int){
+        poly_epsilon = apoly_epsilon
     }
 }
 

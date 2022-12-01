@@ -13,17 +13,6 @@
         android:layout_height="match_parent"
         >
 
-        <TextView
-            android:id="@+id/bounding_values"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Faces:"
-            android:textSize="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.87" />
         <ImageView
             android:id="@+id/srcImage"
             android:layout_width="match_parent"
@@ -46,7 +35,22 @@
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.87" />
+            app:layout_constraintVertical_bias="0.80" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@id/clusterSlider"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:valueFrom="2"
+            android:valueTo="8"
+            android:stepSize="1"
+            android:value="5"
+            app:layout_constraintBottom_toTopOf="@+id/previous_activity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.97"/>
 
         <Button
             android:id="@+id/previous_activity"
@@ -58,7 +62,7 @@
             app:layout_constraintHorizontal_bias="0.12"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.94" />
+            app:layout_constraintVertical_bias="0.97" />
 
         <Button
             android:id="@+id/process_image"
@@ -70,7 +74,7 @@
             app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.94" />
+            app:layout_constraintVertical_bias="0.97" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
