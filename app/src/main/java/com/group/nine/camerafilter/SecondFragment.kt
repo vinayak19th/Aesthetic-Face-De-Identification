@@ -1,15 +1,21 @@
 package com.group.nine.camerafilter
 
+import android.R.attr.data
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.*
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
@@ -20,6 +26,10 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.group.nine.camerafilter.databinding.FragmentSecondBinding
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -31,6 +41,7 @@ class SecondFragment : Fragment() {
     private lateinit var outView : ImageView
     private lateinit var imageURI : Uri
     private lateinit var processImageButton : Button
+    private lateinit var saveImageButton : Button
     private lateinit var bitImage : Bitmap
     private lateinit var slider : Slider
     private lateinit var epsilonSlider : Slider
@@ -81,6 +92,12 @@ class SecondFragment : Fragment() {
         processImageButton.setOnClickListener {
             processImage(faceDetector,view.context)
         }
+
+        saveImageButton = view.findViewById(R.id.save_image)
+        saveImageButton.setOnClickListener {
+            saveToGallery(view.context, bitImage, "PML598")
+        }
+
         binding.previousActivity.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
         }
@@ -139,6 +156,37 @@ class SecondFragment : Fragment() {
         }
         Log.d("render","Finished Face render")
     }
+
+    fun saveToGallery(context: Context, bitmap: Bitmap, albumName: String) {
+        val filename = "${System.currentTimeMillis()}.png"
+        val write: (OutputStream) -> Boolean = {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_DCIM}/$albumName")
+            }
+
+            context.contentResolver.let {
+                it.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let { uri ->
+                    it.openOutputStream(uri)?.let(write)
+                }
+            }
+        } else {
+            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString() + File.separator + albumName
+            val file = File(imagesDir)
+            if (!file.exists()) {
+                file.mkdir()
+            }
+            val image = File(imagesDir, filename)
+            write(FileOutputStream(image))
+        }
+        Toast.makeText(getActivity(), "Image Saved" , Toast.LENGTH_LONG).show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
