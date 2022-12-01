@@ -33,10 +33,11 @@ class SecondFragment : Fragment() {
     private lateinit var processImageButton : Button
     private lateinit var bitImage : Bitmap
     private lateinit var slider : Slider
+    private lateinit var epsilonSlider : Slider
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    val filter = ImageFilter(an_clusters = 3)
+    val filter = ImageFilter(an_clusters = 3, apoly_epsilon = 10.0)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,9 +60,14 @@ class SecondFragment : Fragment() {
         srcView = view.findViewById(R.id.srcImage)
         outView = view.findViewById(R.id.outImage)
         slider = view.findViewById(R.id.clusterSlider)
+        epsilonSlider = view.findViewById(R.id.epsilonSlider)
         slider.addOnChangeListener { slider, value, fromUser ->
-            Log.d("Slider:","Setting Cluser to :"+slider.value.toString())
+            Log.d("Cluster Slider:","Setting Cluster to :"+slider.value.toString())
             filter.setClusterSize(value.toInt())
+        }
+        epsilonSlider.addOnChangeListener { epsilonSlider, value, fromUser ->
+            Log.d("Epsilon Slider:","Setting Epsilon to :"+ epsilonSlider.value.toString())
+            filter.setPolyEpsilon(value.toDouble())
         }
         processImageButton = view.findViewById(R.id.process_image)
         setFragmentResultListener("ImageUri"){ requestKey, bundle ->
