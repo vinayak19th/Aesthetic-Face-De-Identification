@@ -1,27 +1,26 @@
 package com.group.nine.camerafilter
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
+import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.slider.Slider
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
-import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.group.nine.camerafilter.databinding.FragmentSecondBinding
-import com.group.nine.camerafilter.ImageFilter
+
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
@@ -89,14 +88,24 @@ class SecondFragment : Fragment() {
             }
     }
 
+    private fun overlayer(bmp1: Bitmap, bmp2: Bitmap, rectangle: Rect): Bitmap {
+        val bmOverlay = Bitmap.createBitmap(bmp1.width, bmp1.height, bmp1.config)
+        val canvas = Canvas(bmOverlay)
+        canvas.drawBitmap(bmp1, Matrix(), null)
+        canvas.drawBitmap(bmp2, null, rectangle, null);
+        return bmOverlay
+    }
+
     private fun renderBB(faces: List<Face> ){
         faces.forEach { face ->
             Log.d("FACES:","Values:"+face.boundingBox.toString())
             var outImage = Bitmap.createBitmap(bitImage,face.boundingBox.left,face.boundingBox.top,face.boundingBox.width(),face.boundingBox.height())
+            val rectangle = Rect(face.boundingBox.left,face.boundingBox.top,face.boundingBox.left+face.boundingBox.width(),face.boundingBox.top +face.boundingBox.height())
             outImage = filter.processImage(outImage)
-            activity?.runOnUiThread {
-                outView.setImageBitmap(outImage)
-            }
+            bitImage = overlayer(bitImage, outImage, rectangle)
+        }
+        activity?.runOnUiThread {
+            outView.setImageBitmap(bitImage)
         }
         Log.d("render","Finished Face render")
     }
