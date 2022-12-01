@@ -16,20 +16,7 @@ class ImageFilter(ablur_kernel : Int = 9,an_clusters:Int = 8, amin_area :Int = 5
     var blur_kernel = ablur_kernel
     var min_area = amin_area
     var poly_epsilon = apoly_epsilon
-    fun processFace(face:Bitmap):Bitmap{
-        Log.d("OPENCV:","Started Face Processing")
-        val mat = Mat()
-        Utils.bitmapToMat(face, mat)
-        Log.d("OPENCV:","Converted Bitmap to Mat")
-        // Convert to grayscale
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY)
-        Log.d("OPENCV:","Converted Mat to grayscale")
-        // Make a mutable face to copy grayscale image
-        val grayBitmap = face.copy(face.config, true)
-        Utils.matToBitmap(mat, grayBitmap)
-        Log.d("OPENCV:","Converted Mat to Bitmap")
-        return grayBitmap
-    }
+
     fun processImage(face:Bitmap):Bitmap {
         val imageMat = Mat()
         Utils.bitmapToMat(face, imageMat)
