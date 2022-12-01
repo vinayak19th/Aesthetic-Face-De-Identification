@@ -1,0 +1,2 @@
+ninja: Entering directory `/mnt/d/git/CameraFilter/opencv/.cxx/Debug/n102v6o6/x86'
+ninja: no work to do.

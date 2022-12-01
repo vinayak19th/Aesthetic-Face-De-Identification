@@ -93,7 +93,7 @@ class SecondFragment : Fragment() {
             Log.d("FACES:","Values:"+face.boundingBox.toString())
             var outImage = Bitmap.createBitmap(bitImage,face.boundingBox.left,face.boundingBox.top,face.boundingBox.width(),face.boundingBox.height())
             outImage = filter.kmeansProcess(outImage)
-            outImage = filter.processFace(outImage)
+//            outImage = filter.processFace(outImage)
             activity?.runOnUiThread {
                 tv.text = tv.text.toString() + face.boundingBox.toString()
                 outView.setImageBitmap(outImage)
