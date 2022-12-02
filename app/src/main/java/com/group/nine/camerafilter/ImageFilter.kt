@@ -8,9 +8,8 @@ import org.opencv.imgproc.Imgproc
 import org.opencv.ml.SVM
 
 
-class ImageFilter(ablur_kernel : Int = 9,an_clusters:Int = 8, amin_area :Double = 100.0, apoly_epsilon:Double = 10.0) {
+class ImageFilter(an_clusters:Int = 8, amin_area :Double = 100.0, apoly_epsilon:Double = 10.0) {
     var n_clusters = an_clusters
-    var blur_kernel = ablur_kernel
     var min_area = amin_area
     var poly_epsilon = apoly_epsilon
 
