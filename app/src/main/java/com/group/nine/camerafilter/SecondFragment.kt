@@ -15,10 +15,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -40,15 +42,13 @@ class SecondFragment : Fragment() {
     private lateinit var srcView : ImageView
     private lateinit var outView : ImageView
     private lateinit var imageURI : Uri
-    private lateinit var processImageButton : Button
-    private lateinit var saveImageButton : Button
     private lateinit var bitImage : Bitmap
-    private lateinit var slider : Slider
-    private lateinit var epsilonSlider : Slider
+    private lateinit var numFacesLabel : TextView
+    private var threshholdFactor : Int = 5
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    val filter = ImageFilter(an_clusters = 3, apoly_epsilon = 10.0)
+    val filter = ImageFilter(an_clusters = 5, apoly_epsilon = 4.0)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,17 +70,22 @@ class SecondFragment : Fragment() {
         //  FACE DETECTION CODE
         srcView = view.findViewById(R.id.srcImage)
         outView = view.findViewById(R.id.outImage)
-        slider = view.findViewById(R.id.clusterSlider)
-        epsilonSlider = view.findViewById(R.id.epsilonSlider)
-        slider.addOnChangeListener { slider, value, fromUser ->
+        numFacesLabel = view.findViewById(R.id.number_faces)
+
+        //Sliders
+        view.findViewById<Slider>(R.id.clusterSlider).addOnChangeListener { slider, value, fromUser ->
             Log.d("Cluster Slider:","Setting Cluster to :"+slider.value.toString())
             filter.setClusterSize(value.toInt())
         }
-        epsilonSlider.addOnChangeListener { epsilonSlider, value, fromUser ->
+        view.findViewById<Slider>(R.id.epsilonSlider).addOnChangeListener { epsilonSlider, value, fromUser ->
             Log.d("Epsilon Slider:","Setting Epsilon to :"+ epsilonSlider.value.toString())
             filter.setPolyEpsilon(value.toDouble())
         }
-        processImageButton = view.findViewById(R.id.process_image)
+        view.findViewById<Slider>(R.id.threshhold_slider).addOnChangeListener { threshSlider, value, fromUser ->
+            Log.d("Epsilon Slider:","Setting Epsilon to :"+ threshSlider.value.toString())
+            threshholdFactor = value.toInt()
+        }
+
         setFragmentResultListener("ImageUri"){ requestKey, bundle ->
             imageURI = Uri.parse(bundle.getString("result"))
             val imSource = ImageDecoder.createSource(requireActivity().contentResolver,imageURI)
@@ -89,15 +94,15 @@ class SecondFragment : Fragment() {
             }
             srcView.setImageBitmap(bitImage)
         }
-        processImageButton.setOnClickListener {
+
+        //Buttons
+
+        view.findViewById<Button>(R.id.process_image).setOnClickListener {
             processImage(faceDetector,view.context)
         }
-
-        saveImageButton = view.findViewById(R.id.save_image)
-        saveImageButton.setOnClickListener {
+        binding.saveImage.setOnClickListener {
             saveToGallery(view.context, bitImage, "PML598")
         }
-
         binding.previousActivity.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
         }
@@ -105,7 +110,7 @@ class SecondFragment : Fragment() {
 
     private fun processImage(faceDetector:FaceDetector, context:Context) {
         val inputImage : InputImage = InputImage.fromFilePath(context,imageURI)
-        val faces = faceDetector.process(inputImage)
+        faceDetector.process(inputImage)
             .addOnSuccessListener {
                 renderBB(it)
             }
@@ -121,26 +126,34 @@ class SecondFragment : Fragment() {
 
     private fun findThresholdBB(faces: List<Face> ) : Int {
         var threshold = 0
-        var t = 0
         faces.forEach { face ->
-            t = face.boundingBox.width()*face.boundingBox.height()
-            threshold = Math.max(threshold, t)
+            threshold = Math.max(threshold, face.boundingBox.width()*face.boundingBox.height())
         }
-        return threshold/5;
+        return threshold/threshholdFactor;
+    }
+
+    private fun correctDims(bb:Rect,imWidth:Int,imheight:Int):Pair<Int,Int>{
+        var width = bb.width()
+        var height = bb.height()
+        if(bb.left+bb.width() > imWidth){
+            width = imWidth - bb.left
+        }
+        if(bb.top+height > imheight){
+            height =  imheight - bb.top
+        }
+        return Pair(width,height)
     }
 
     private fun renderBB(faces: List<Face> ){
+        numFacesLabel.text = faces.size.toString()
         var threshold = findThresholdBB(faces)
+        var outFinalImage = bitImage.copy(bitImage.config,true)
         faces.forEach { face ->
             Log.d("FACES:","Values:"+face.boundingBox.toString())
             if ((face.boundingBox.width()*face.boundingBox.height()) <= threshold) {
-                var outImage = Bitmap.createBitmap(
-                    bitImage,
-                    face.boundingBox.left,
-                    face.boundingBox.top,
-                    face.boundingBox.width(),
-                    face.boundingBox.height()
-                )
+                Log.d("Bitmap Creation","x:"+face.boundingBox.left.toString()+" | width()="+face.boundingBox.width().toString() + " | bitmap.width()="+ bitImage.width.toString())
+                val (correctWidth,correctHeight) = correctDims(face.boundingBox,bitImage.width,bitImage.height)
+                var outImage = Bitmap.createBitmap(bitImage,face.boundingBox.left,face.boundingBox.top,correctWidth,correctHeight)
                 val rectangle = Rect(
                     face.boundingBox.left,
                     face.boundingBox.top,
@@ -148,11 +161,12 @@ class SecondFragment : Fragment() {
                     face.boundingBox.top + face.boundingBox.height()
                 )
                 outImage = filter.processImage(outImage)
-                bitImage = overlayer(bitImage, outImage, rectangle)
+                outFinalImage = overlayer(outFinalImage, outImage, rectangle)
             }
         }
         activity?.runOnUiThread {
-            outView.setImageBitmap(bitImage)
+            outView.setImageBitmap(outFinalImage)
+            outView.invalidate()
         }
         Log.d("render","Finished Face render")
     }
