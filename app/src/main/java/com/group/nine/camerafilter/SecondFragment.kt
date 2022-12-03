@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
@@ -101,7 +102,7 @@ class SecondFragment : Fragment() {
             processImage(faceDetector,view.context)
         }
         binding.saveImage.setOnClickListener {
-            saveToGallery(view.context, bitImage, "PML598")
+            saveToGallery(view.context, "PML598")
         }
         binding.previousActivity.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
@@ -171,10 +172,10 @@ class SecondFragment : Fragment() {
         Log.d("render","Finished Face render")
     }
 
-    fun saveToGallery(context: Context, bitmap: Bitmap, albumName: String) {
+    fun saveToGallery(context: Context, albumName: String) {
         val filename = "${System.currentTimeMillis()}.png"
         val write: (OutputStream) -> Boolean = {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            outView.drawToBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
