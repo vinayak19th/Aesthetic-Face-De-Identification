@@ -61,4 +61,6 @@ You can download the app apk from [here](https://drive.google.com/file/d/1PnWSjS
     </tbody>
 </table>
 
+### 2. <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/video.svg" width="20" height="20"> App Demo:
 
+You can find the demo for the app [Demo.mp4](Demo.mp4)
