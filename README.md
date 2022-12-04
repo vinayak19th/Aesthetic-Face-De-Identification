@@ -20,10 +20,10 @@ You can use the standard Android studio build methods to run the application on 
 ### 1. <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/mobile.svg" width="20" height="20"> App UI
 
 <table>
-    <tbody >
+    <tbody>
     <tr>
-        <td rowspan=5 style="border:0px">
-            <img src="./readme_images/UI.png" height="500"><br>
+        <td rowspan=5 style="border:0px;">
+            <img src="./readme_images/UI.png"><br>
             <i>Image Process Screen</i>
         </td>
          <td>
