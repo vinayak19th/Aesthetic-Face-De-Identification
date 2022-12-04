@@ -15,8 +15,7 @@ Need to set up OpenCV yourself, here are the instructions [link](https://philipp
 ### 2. <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/androidstudio/androidstudio-original.svg" width="20" height="20" /> Android Compile 
 You can use the standard Android studio build methods to run the application on a phone or the emulator. **Instructions** can be found [here](https://developer.android.com/studio/run).
 
-Watch the video for an overview
-
+Watch the video for an overview (needs access)
 https://user-images.githubusercontent.com/31789203/205481780-cd96bfdf-5b0b-4ff9-8535-e386caa4f7b8.mp4
 
 
@@ -67,9 +66,7 @@ You can download the app apk from [here](https://drive.google.com/file/d/1PnWSjS
 
 ### 2. <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/video.svg" width="20" height="20"> App Demo:
 
-You can find the demo for the app here
-
-https://user-images.githubusercontent.com/31789203/205481877-229d3aef-38b7-4912-a61e-ba5584aac740.mp4
+You can find the demo for the app here https://drive.google.com/file/d/1RlTHRILh1cd_j9feUgFJkHeQJrICpAvK/view?usp=sharing
 
 
 
