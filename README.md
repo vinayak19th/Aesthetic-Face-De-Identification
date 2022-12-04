@@ -15,7 +15,7 @@ Need to set up OpenCV yourself, here are the instructions [link](https://philipp
 ### 2. <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/androidstudio/androidstudio-original.svg" width="20" height="20" /> Android Compile 
 You can use the standard Android studio build methods to run the application on a phone or the emulator. **Instructions** can be found [here](https://developer.android.com/studio/run).
 
-Watch the video [compilation_demo.mp4](https://github.com/vinayak19th/Aesthetic-Face-De-Identification/blob/master/compilation_demo.mp4?raw=true)
+Watch the video [compilation_demo.mp4](compilation_demo.mp4)
 
 ## App Description:
 
