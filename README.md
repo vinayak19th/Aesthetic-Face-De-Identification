@@ -22,3 +22,6 @@ You can use the standard Android studio build methods to run the application on 
 <img src="./readme_images/UI.png" height="400"><br>
 <caption><i>Image Process Screen</i></caption>
 </p>
+
+### 2. Compilation demo of our application
+Watch the video [link](https://drive.google.com/file/d/1YOQFlHQubktzrKQH43BQKHww-Pqae8wl/view?usp=sharing)
