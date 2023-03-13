@@ -1,0 +1,4 @@
+/home/vinayak/Android/Sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/1d3v5k1a/x86 \
+  opencv_jni_shared

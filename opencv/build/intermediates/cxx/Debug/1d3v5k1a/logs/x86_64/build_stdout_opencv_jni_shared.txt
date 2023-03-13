@@ -1,0 +1,2 @@
+ninja: Entering directory `/mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/1d3v5k1a/x86_64'
+ninja: no work to do.

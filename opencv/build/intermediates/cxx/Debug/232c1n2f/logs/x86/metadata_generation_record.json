@@ -1,0 +1,170 @@
+[
+  {
+    "level_": 0,
+    "message_": "Start JSON generation. Platform version: 21 min SDK version: x86",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 351278023
+  },
+  {
+    "level_": 0,
+    "message_": "rebuilding JSON /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86/android_gradle_build.json due to:",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 853690409
+  },
+  {
+    "level_": 0,
+    "message_": "- expected json /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86/android_gradle_build.json file is not present, will remove stale json folder",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1767993883
+  },
+  {
+    "level_": 0,
+    "message_": "- missing previous command file /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86/metadata_generation_command.txt, will remove stale json folder",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1506693027
+  },
+  {
+    "level_": 0,
+    "message_": "- command changed from previous, will remove stale json folder",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1482559645
+  },
+  {
+    "level_": 0,
+    "message_": "created folder \u0027/mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86\u0027",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -2134778714
+  },
+  {
+    "level_": 0,
+    "message_": "executing cmake /home/vinayak/Android/Sdk/cmake/3.18.1/bin/cmake \\\n  -H/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper \\\n  -DCMAKE_SYSTEM_NAME\u003dAndroid \\\n  -DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON \\\n  -DCMAKE_SYSTEM_VERSION\u003d21 \\\n  -DANDROID_PLATFORM\u003dandroid-21 \\\n  -DANDROID_ABI\u003dx86 \\\n  -DCMAKE_ANDROID_ARCH_ABI\u003dx86 \\\n  -DANDROID_NDK\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393 \\\n  -DCMAKE_ANDROID_NDK\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393 \\\n  -DCMAKE_TOOLCHAIN_FILE\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393/build/cmake/android.toolchain.cmake \\\n  -DCMAKE_MAKE_PROGRAM\u003d/home/vinayak/Android/Sdk/cmake/3.18.1/bin/ninja \\\n  -DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d/mnt/d/git/Aesthetic-Face-De-Identification/opencv/build/intermediates/cxx/Debug/232c1n2f/obj/x86 \\\n  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003d/mnt/d/git/Aesthetic-Face-De-Identification/opencv/build/intermediates/cxx/Debug/232c1n2f/obj/x86 \\\n  -DCMAKE_BUILD_TYPE\u003dDebug \\\n  -B/mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86 \\\n  -GNinja \\\n  -DANDROID_STL\u003dc++_shared\n",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 2133538635
+  },
+  {
+    "level_": 0,
+    "message_": "/home/vinayak/Android/Sdk/cmake/3.18.1/bin/cmake \\\n  -H/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper \\\n  -DCMAKE_SYSTEM_NAME\u003dAndroid \\\n  -DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON \\\n  -DCMAKE_SYSTEM_VERSION\u003d21 \\\n  -DANDROID_PLATFORM\u003dandroid-21 \\\n  -DANDROID_ABI\u003dx86 \\\n  -DCMAKE_ANDROID_ARCH_ABI\u003dx86 \\\n  -DANDROID_NDK\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393 \\\n  -DCMAKE_ANDROID_NDK\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393 \\\n  -DCMAKE_TOOLCHAIN_FILE\u003d/home/vinayak/Android/Sdk/ndk/25.1.8937393/build/cmake/android.toolchain.cmake \\\n  -DCMAKE_MAKE_PROGRAM\u003d/home/vinayak/Android/Sdk/cmake/3.18.1/bin/ninja \\\n  -DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d/mnt/d/git/Aesthetic-Face-De-Identification/opencv/build/intermediates/cxx/Debug/232c1n2f/obj/x86 \\\n  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003d/mnt/d/git/Aesthetic-Face-De-Identification/opencv/build/intermediates/cxx/Debug/232c1n2f/obj/x86 \\\n  -DCMAKE_BUILD_TYPE\u003dDebug \\\n  -B/mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86 \\\n  -GNinja \\\n  -DANDROID_STL\u003dc++_shared\n",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1589401452
+  },
+  {
+    "level_": 0,
+    "message_": "Exiting generation of /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86/compile_commands.json.bin normally",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 1711542667
+  },
+  {
+    "level_": 0,
+    "message_": "done executing cmake",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1794905896
+  },
+  {
+    "level_": 0,
+    "message_": "write command file /mnt/d/git/Aesthetic-Face-De-Identification/opencv/.cxx/Debug/232c1n2f/x86/metadata_generation_command.txt",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": -1634268493
+  },
+  {
+    "level_": 0,
+    "message_": "JSON generation completed without problems",
+    "file_": "/mnt/d/git/Aesthetic-Face-De-Identification/opencv/libcxx_helper/CMakeLists.txt",
+    "tag_": "debug|x86",
+    "diagnosticCode_": 0,
+    "memoizedIsInitialized": 1,
+    "unknownFields": {
+      "fields": {},
+      "fieldsDescending": {}
+    },
+    "memoizedSize": -1,
+    "memoizedHashCode": 143167188
+  }
+]
