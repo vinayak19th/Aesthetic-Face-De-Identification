@@ -16,4 +16,3 @@ local.properties
 *.apk
 .idea/
 python_experiments/.ipynb_checkpoints/
-opencv/
