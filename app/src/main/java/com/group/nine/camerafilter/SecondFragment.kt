@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.ContactsContract.CommonDataKinds.Im
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -49,7 +50,7 @@ class SecondFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    val filter = ImageFilter(an_clusters = 5, apoly_epsilon = 4.0)
+    private lateinit var filter : ImageFilter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,6 +73,7 @@ class SecondFragment : Fragment() {
         srcView = view.findViewById(R.id.srcImage)
         outView = view.findViewById(R.id.outImage)
         numFacesLabel = view.findViewById(R.id.number_faces)
+        filter = ImageFilter(view.context,an_clusters = 5, apoly_epsilon = 4.0)
 
         //Sliders
         view.findViewById<Slider>(R.id.clusterSlider).addOnChangeListener { slider, value, fromUser ->
