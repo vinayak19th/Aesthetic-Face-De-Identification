@@ -23,9 +23,9 @@ class ImageFilter:
         self.poly_epsilon = poly_epsilon
         self.mask = cv2.imread(mask)
         self.processed_image = None
-        self.thres=thresh
+        self.threshold_factor=thresh
         self.vector_area = np.vectorize(self.area,signature='(n)->()')
-
+        
     def area(self,bb):
         return bb[2]*bb[3]
     
@@ -112,10 +112,9 @@ class ImageFilter:
         images = self.processed_image.copy()
         # show(im)
         faces,images = self.__get_crops(images)
-        threshold= np.max(self.vector_area(faces))/self.thres
+        threshold= np.max(self.vector_area(faces))/self.threshold_factor
         print("Threshold=",threshold)
         for i in tqdm(range(len(images))):
-            print("Area:",faces[i][2]*faces[i][3])
             if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
                 #Blurring
@@ -140,14 +139,13 @@ class ImageFilter:
                 self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
 
     def process_image_array(self,image):
-        self.processed_image = image
-        images = self.processed_image.copy()
+        outImage = image.copy()
+        images = outImage.copy()
         # show(im)
         faces,images = self.__get_crops(images)
-        threshold= np.max(self.vector_area(faces))/self.thres
+        threshold= np.max(self.vector_area(faces))/self.threshold_factor
         print("Threshold=",threshold)
         for i in tqdm(range(len(images))):
-            print("Area:",faces[i][2]*faces[i][3])
             if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
                 #Blurring
@@ -169,9 +167,10 @@ class ImageFilter:
                     cv2.drawContours(canvas, [approx], -1, rep, -1)
                 
                 canvas = self.__black_inpaint(canvas)
-                self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
-        return self.processed_image
+                outImage = self.__smooth_blend(canvas,outImage, faces[i])
+        return outImage
 
 if __name__ == "__main__":
     image_fitler = ImageFilter()
     image_fitler.process_image("./original.png")
+    image_fitler.show()

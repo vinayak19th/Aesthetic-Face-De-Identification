@@ -48,7 +48,7 @@ class Ui(QtWidgets.QMainWindow):
         self.sliders = {} 
         self.slider_labels = {} 
         i =0 
-        ranges = {"n_clusters":(1,20,1),'min_area':(5,200,5),'poly_epsilon':(1,25,1),'threshold_factor':(1,7,1)}
+        ranges = {"n_clusters":(1,20,1),'min_area':(5,500,5),'poly_epsilon':(1,25,1),'threshold_factor':(1,7,1)}
         for label in ['n_clusters','min_area','poly_epsilon','threshold_factor']:
             temp_label = QLabel(label)
             self.slider_labels[label] = QLabel('{}'.format(ranges[label][0]))
@@ -63,10 +63,22 @@ class Ui(QtWidgets.QMainWindow):
         del i
         del temp_label
         del ranges
+        
+        
+        self.sliders['n_clusters'].setValue(self.image_filter.n_clusters)
+        self.slider_labels['n_clusters'].setNum(self.image_filter.n_clusters)
         self.sliders['n_clusters'].valueChanged.connect(self.update_clusers)
-        self.image_filter.n_clusters=self.sliders['n_clusters'].value()
+
+        self.sliders['min_area'].setValue(self.image_filter.min_area)
+        self.slider_labels['min_area'].setNum(self.image_filter.min_area)
         self.sliders['min_area'].valueChanged.connect(self.update_min_area)
+        
+        self.sliders['poly_epsilon'].setValue(self.image_filter.poly_epsilon)
+        self.slider_labels['poly_epsilon'].setNum(self.image_filter.poly_epsilon)
         self.sliders['poly_epsilon'].valueChanged.connect(self.update_poly_epsilon)
+
+        self.sliders['threshold_factor'].setValue(self.image_filter.threshold_factor)
+        self.slider_labels['threshold_factor'].setNum(self.image_filter.threshold_factor)
         self.sliders['threshold_factor'].valueChanged.connect(self.update_threshold_factor)
 
         slider_box.setSpacing(50)
