@@ -19,3 +19,4 @@ python_experiments/.ipynb_checkpoints/
 python_experiments/__pycache__/
 python_experiments/pyapp/dist/
 python_experiments/pyapp/build/
+python_experiments/pyapp/__pycache__/
