@@ -7,7 +7,7 @@ from tqdm import tqdm
 from matplotlib.pyplot import imshow
 
 class ImageFilter:
-    def __init__(self,blur_kernel = 9, n_clusters = 10, min_area = 100, poly_epsilon = 10,mask="./masks/mask5.png"):
+    def __init__(self,blur_kernel = 19, n_clusters = 6, min_area = 200, poly_epsilon = 13,mask="./masks/mask5.png",thresh:int=1):
         """_summary_
 
         Args:
@@ -23,6 +23,7 @@ class ImageFilter:
         self.poly_epsilon = poly_epsilon
         self.mask = cv2.imread(mask)
         self.processed_image = None
+        self.thres=thresh
         self.vector_area = np.vectorize(self.area,signature='(n)->()')
 
     def area(self,bb):
@@ -103,17 +104,19 @@ class ImageFilter:
             coordinates: (y,y+h,x,x+w)
         """
         mask= cv2.resize(self.mask,fitler.shape[:2])/255
-        return np.add(np.multiply(orig[coordinates[1]:coordinates[1]+coordinates[3], coordinates[0]:coordinates[0]+coordinates[2]],mask),np.multiply(fitler,(1-mask)))
+        orig[coordinates[1]:coordinates[1]+coordinates[3], coordinates[0]:coordinates[0]+coordinates[2]] = np.add(np.multiply(orig[coordinates[1]:coordinates[1]+coordinates[3], coordinates[0]:coordinates[0]+coordinates[2]],mask),np.multiply(fitler,(1-mask)))
+        return orig
     
-    def process_image(self,in_file,thresh:int=1):
+    def process_image(self,in_file):
         self.processed_image = cv2.imread(in_file)
         images = self.processed_image.copy()
         # show(im)
         faces,images = self.__get_crops(images)
-        threshold= self.vector_area(faces)/thresh
+        threshold= np.max(self.vector_area(faces))/self.thres
         print("Threshold=",threshold)
         for i in tqdm(range(len(images))):
-            if(faces[i][2]*faces[i][3] < threshold):
+            print("Area:",faces[i][2]*faces[i][3])
+            if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
                 #Blurring
                 im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
@@ -135,4 +138,40 @@ class ImageFilter:
                 
                 canvas = self.__black_inpaint(canvas)
                 self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
-        self.show()
+
+    def process_image_array(self,image):
+        self.processed_image = image
+        images = self.processed_image.copy()
+        # show(im)
+        faces,images = self.__get_crops(images)
+        threshold= np.max(self.vector_area(faces))/self.thres
+        print("Threshold=",threshold)
+        for i in tqdm(range(len(images))):
+            print("Area:",faces[i][2]*faces[i][3])
+            if(faces[i][2]*faces[i][3] <= threshold):
+                im = images[i]
+                #Blurring
+                im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
+                #Clustering around {args.n_clusters} colors
+                reps, labels = self.__cluster(im)
+
+                #Remapping image to representative colors
+                im = self.__remap_colors(im, reps, labels)
+                
+                #Finding contours with area gate {args.min_area}
+                contours = self.__find_contours(im, reps)
+
+                #Drawing
+                canvas = np.zeros(im.shape, np.uint8)
+                # show(im)
+                for _, cont, rep in contours:
+                    approx = cv2.approxPolyDP(cont, self.poly_epsilon, True)
+                    cv2.drawContours(canvas, [approx], -1, rep, -1)
+                
+                canvas = self.__black_inpaint(canvas)
+                self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
+        return self.processed_image
+
+if __name__ == "__main__":
+    image_fitler = ImageFilter()
+    image_fitler.process_image("./original.png")

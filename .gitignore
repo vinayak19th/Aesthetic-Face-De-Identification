@@ -16,3 +16,4 @@ local.properties
 *.apk
 .idea/
 python_experiments/.ipynb_checkpoints/
+python_experiments/__pycache__/
