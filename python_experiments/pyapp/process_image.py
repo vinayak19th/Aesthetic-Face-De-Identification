@@ -5,9 +5,15 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from matplotlib.pyplot import imshow
+import argparse
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Example script using argparse.')
+    parser.add_argument('-i','--input', type=str, help='Input image path')
+    return parser.parse_args()
 
 class ImageFilter:
-    def __init__(self,blur_kernel = 19, n_clusters = 6, min_area = 200, poly_epsilon = 13,mask="./masks/mask5.png",thresh:int=1):
+    def __init__(self,blur_kernel = 19, n_clusters = 6, min_area = 200, poly_epsilon = 13,mask="./mask5.png",thresh:int=1):
         """_summary_
 
         Args:
@@ -138,13 +144,18 @@ class ImageFilter:
                 canvas = self.__black_inpaint(canvas)
                 self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
 
-    def process_image_array(self,image):
+    def process_image_array(self,image,meta_data):
         outImage = image.copy()
         images = outImage.copy()
         # show(im)
         faces,images = self.__get_crops(images)
         threshold= np.max(self.vector_area(faces))/self.threshold_factor
-        print("Threshold=",threshold)
+        meta_data["Faces Detected"].setNum(len(faces))
+        meta_data["Threshold Area"].setText(str(threshold))
+        meta_data["Threshold Area"].adjustSize()
+        meta_data["Threshold Area"].setBaseSize(meta_data["Threshold Area"].size())
+
+        print(threshold)
         for i in tqdm(range(len(images))):
             if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
@@ -171,6 +182,7 @@ class ImageFilter:
         return outImage
 
 if __name__ == "__main__":
+    args = get_args()
     image_fitler = ImageFilter()
-    image_fitler.process_image("./original.png")
+    image_fitler.process_image(args.input)
     image_fitler.show()
