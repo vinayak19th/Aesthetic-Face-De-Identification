@@ -70,6 +70,9 @@ You can download the app apk from [here](https://drive.google.com/file/d/1PnWSjS
 You can find the demo for the app here https://drive.google.com/file/d/1RlTHRILh1cd_j9feUgFJkHeQJrICpAvK/view?usp=sharing
 
 
+### 2. <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/mobile.svg" width="20" height="20"> Desktop App
+We have also created a desktop python based application
+<img src="./readme_images/PC_App.png"><br>
 
 
 
