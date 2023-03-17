@@ -74,5 +74,8 @@ You can find the demo for the app here https://drive.google.com/file/d/1RlTHRILh
 We have also created a desktop python based application
 <img src="./readme_images/PC_App.png"><br>
 
+You can run the dockerized version of the application directly:
 
-
+```shell
+$ docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix vinayak1998th/face_filter:latest
+```
