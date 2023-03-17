@@ -3,10 +3,12 @@ package com.group.nine.camerafilter
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.util.Log
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import org.opencv.photo.Photo
 import java.io.FileNotFoundException
 import java.io.InputStream
 
@@ -40,6 +42,11 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         Log.d("Blend","Starting Blend")
         Log.d("Blend","Filter Size "+filterMat.size()+"| Channels:"+filterMat.channels())
         Log.d("Blend","Input Size "+imageMat.size()+"| Channels:"+imageMat.channels())
+        var paintMask : Mat = Mat()
+        Core.inRange(filterMat, Scalar(0.0, 0.0, 0.0),Scalar(5.0, 5.0, 5.0),paintMask)
+        Photo.inpaint(filterMat,paintMask,filterMat,1.0,Photo.INPAINT_NS)
+        paintMask.release()
+//        cv2.inpaint(fitler, paint_mask, 1, flags=cv2.INPAINT_TELEA)
         filterMat.convertTo(filterMat, CvType.CV_32FC3)
         imageMat.convertTo(imageMat, CvType.CV_32FC3)
 
