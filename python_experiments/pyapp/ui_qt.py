@@ -147,8 +147,8 @@ class Ui(QtWidgets.QMainWindow):
 
     def saveImage(self):
         try:
-            assert self.image != None,"No image loaded"
-            assert self.image_processed != None,"No image processed"
+            assert type(self.image) != type(None),"No image loaded"
+            assert type(self.image_processed) != type(None),"No image processed"
             fileName, _ = QFileDialog.getSaveFileName(
                 None,
                 "Save Image",
@@ -163,7 +163,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def processImage(self):
         try:
-            assert self.image != None,"No image or invalid image loaded"
+            assert type(self.image) != type(None),"No image loaded"
             self.image_processed = self.image_filter.process_image_array(self.image,self.meta_data) 
             im = cv2.cvtColor(self.image_processed, cv2.COLOR_BGR2RGB)
             height, width, _ = im.shape
