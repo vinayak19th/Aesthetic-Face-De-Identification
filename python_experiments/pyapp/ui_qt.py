@@ -11,14 +11,13 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
 
-        # self.error_msg = self.create_error_box()
+        self.error_msg = self.create_error_box()
 
         self.image_filter = ImageFilter()
 
         self.image = None
         self.image_processed = None
-        self.imageLoaded = False
-
+        
         # Resize window and label to fit desired size.
         window_width = 1280 
         window_height = 720
@@ -118,19 +117,20 @@ class Ui(QtWidgets.QMainWindow):
         self.resize(window_width, window_height)
 
 
-    # def create_error_box(self):
-    #     msg = QMessageBox()
-    #     msg.setIcon(QMessageBox.warning)
-    #     msg.setText("This is a message box")
-    #     msg.setInformativeText("This is additional information")
-    #     msg.setWindowTitle("MessageBox demo")
-    #     msg.setDetailedText("The details are as follows:")
-    #     msg.setStandardButtons(QMessageBox.Ok)
-    #     return msg
+    def create_error_box(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setText("Error")
+        msg.setInformativeText("This is an error message.")
+        msg.setWindowTitle("Error")
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.setDetailedText("Extra details.....")
+        msg.setStyleSheet("QDialogButtonBox {min-width: 400px;alignment:left} ");
+        return msg
     
     def loadImage(self):
         fileName, _ = QFileDialog.getOpenFileName(None,"Select Image", "","Image Files (*.png *.jpg)")
-        if fileName:
+        try:
             print("Found image")
             print(self.label.size())
             pixmap = QPixmap(fileName).scaled(self.label.size(), Qt.AspectRatioMode.KeepAspectRatio,
@@ -140,9 +140,15 @@ class Ui(QtWidgets.QMainWindow):
             self.label.setPixmap(pixmap)
             self.image = cv2.imread(filename=fileName)
             self.imageLoaded = True
-        
+        except Exception as e:
+            self.error_msg.setInformativeText("Error in Loading Image")
+            self.error_msg.setDetailedText(str(e))
+            self.error_msg.exec()
+
     def saveImage(self):
-        if self.imageLoaded:
+        try:
+            assert self.image != None,"No image loaded"
+            assert self.image_processed != None,"No image processed"
             fileName, _ = QFileDialog.getSaveFileName(
                 None,
                 "Save Image",
@@ -150,12 +156,14 @@ class Ui(QtWidgets.QMainWindow):
                 "Images (*.png *.xpm *.jpg)"
             )
             cv2.imwrite(fileName,self.image_processed)
-        else:
-            self.error_msg.setText("FUCK OFF")
-            print("Fuck Off")
+        except Exception as e:
+            self.error_msg.setInformativeText("Error in Saving Image")
+            self.error_msg.setDetailedText(str(e))
+            self.error_msg.exec()
 
     def processImage(self):
-        if self.imageLoaded:   
+        try:
+            assert self.image != None,"No image or invalid image loaded"
             self.image_processed = self.image_filter.process_image_array(self.image,self.meta_data) 
             im = cv2.cvtColor(self.image_processed, cv2.COLOR_BGR2RGB)
             height, width, _ = im.shape
@@ -167,8 +175,11 @@ class Ui(QtWidgets.QMainWindow):
             # Scale image to fit within label while maintaining aspect ratio
             # and using smooth transformation for better quality.
             self.label.setPixmap(pixmap)
-        else:
-            print("Fuck Off")
+
+        except Exception as e:
+            self.error_msg.setInformativeText("Error in processing Image")
+            self.error_msg.setDetailedText(str(e))
+            self.error_msg.exec()
 
     def update_clusers(self,value):
         self.slider_labels['n_clusters'].setNum(value)
