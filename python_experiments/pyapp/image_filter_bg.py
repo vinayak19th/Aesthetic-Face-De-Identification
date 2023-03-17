@@ -2,16 +2,83 @@ import cv2
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm import tqdm
-import argparse
-from PyQt6.QtCore import pyqtSignal
+import traceback, sys
+from PyQt6.QtCore import pyqtSignal, QObject,QRunnable, pyqtSlot
 
-def get_args():
-    parser = argparse.ArgumentParser(description='Example script using argparse.')
-    parser.add_argument('-i','--input', type=str, help='Input image path')
-    return parser.parse_args()
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
 
-class ImageFilter:
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        tuple (exctype, value, traceback.format_exc() )
+
+    result
+        object data returned from processing, anything
+
+    progress
+        int indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    final_image = pyqtSignal(np.ndarray)
+    meta_data = pyqtSignal(tuple)
+    error = pyqtSignal(str)
+    progress = pyqtSignal(int)
+    progress_max = pyqtSignal(float)
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                    kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['progress'] = self.signals.progress
+        self.kwargs['meta_data'] = self.signals.meta_data
+
+    @pyqtSlot(np.ndarray)
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            print("Running run")
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit("{}\n{}\n{}".format(str(exctype), str(value), str(traceback.format_exc())))
+        else:
+            self.signals.final_image.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+class ImageFilter():
+    _signal = pyqtSignal(int)
     def __init__(self,blur_kernel = 19, n_clusters = 6, min_area = 200, poly_epsilon = 13,mask="./mask5.png",thresh:int=1):
         """_summary_
 
@@ -22,24 +89,18 @@ class ImageFilter:
             poly_epsilon (int, optional): Similiarity in Contour drawing. Defaults to 10.
             mask (path, optional): Path to mask image. Defaults to 10.
         """
+        super(ImageFilter, self).__init__()
         self.blur_kernel = blur_kernel 
         self.n_clusters =n_clusters
         self.min_area =min_area
         self.poly_epsilon = poly_epsilon
         self.mask = cv2.imread(mask)
-        self.processed_image = None
         self.threshold_factor=thresh
+        self.image = None
         self.vector_area = np.vectorize(self.area,signature='(n)->()')
         
     def area(self,bb):
         return bb[2]*bb[3]
-    
-    def show(self):
-        im = cv2.cvtColor(self.processed_image, cv2.COLOR_BGR2RGB)
-        plt.figure()
-        plt.axis("off")
-        plt.imshow(im)
-        plt.show()
     
     def __get_crops(self,image):
         face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -49,7 +110,7 @@ class ImageFilter:
         for (x, y, w, h) in faces:
             crop_images.append(image[y:y+h, x:x+w])
         return faces , crop_images
-
+    
     def __cluster(self,im):
         im = im.reshape((im.shape[0] * im.shape[1], 3))
         km = KMeans(n_clusters=self.n_clusters, random_state=0)
@@ -112,14 +173,15 @@ class ImageFilter:
         orig[coordinates[1]:coordinates[1]+coordinates[3], coordinates[0]:coordinates[0]+coordinates[2]] = np.add(np.multiply(orig[coordinates[1]:coordinates[1]+coordinates[3], coordinates[0]:coordinates[0]+coordinates[2]],mask),np.multiply(fitler,(1-mask)))
         return orig
     
-    def process_image(self,in_file):
-        self.processed_image = cv2.imread(in_file)
-        images = self.processed_image.copy()
+    def process_image(self,meta_data,progress):
+        print("Staring")
+        images = self.image.copy()
         # show(im)
         faces,images = self.__get_crops(images)
         threshold= np.max(self.vector_area(faces))/self.threshold_factor
-        print("Threshold=",threshold)
-        for i in tqdm(range(len(images))):
+        meta_data.emit((len(faces),threshold))
+        for i in range(len(images)):
+            progress.emit(i)
             if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
                 #Blurring
@@ -141,10 +203,6 @@ class ImageFilter:
                     cv2.drawContours(canvas, [approx], -1, rep, -1)
                 
                 canvas = self.__black_inpaint(canvas)
-                self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
-                
-if __name__ == "__main__":
-    args = get_args()
-    image_fitler = ImageFilter()
-    image_fitler.process_image(args.input)
-    image_fitler.show()
+                self.image = self.__smooth_blend(canvas,self.image, faces[i])
+        progress.emit(len(faces))
+        return self.image

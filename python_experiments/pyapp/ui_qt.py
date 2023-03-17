@@ -2,10 +2,10 @@ import sys
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QFileDialog, QLabel, QPushButton, QSlider,QVBoxLayout, QHBoxLayout, QGridLayout, QProgressBar
 from PyQt6.QtGui import QPixmap,QImage
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThreadPool
 from PyQt6.QtWidgets import QMessageBox
 import cv2
-from process_image import ImageFilter
+from image_filter_bg import ImageFilter, Worker
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -14,6 +14,9 @@ class Ui(QtWidgets.QMainWindow):
         self.error_msg = self.create_error_box()
 
         self.image_filter = ImageFilter()
+        self.threadpool = QThreadPool()
+        self.threadpool.setMaxThreadCount(1)
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         self.image = None
         self.image_processed = None
@@ -60,7 +63,12 @@ class Ui(QtWidgets.QMainWindow):
             self.meta_data[label].setBaseSize(self.meta_data[label].size())
             meta_data_box.addWidget(self.meta_data[label] ,i,1) 
 
-        # self.meta_data['progbar'] = QProgressBar(self)
+        
+        self.meta_data['progbar'] = QProgressBar(self,minimum=0, maximum=100, textVisible=False,objectName="GreenProgressBar")
+        self.meta_data["progbar"].setValue(0)
+        self.meta_data["progbar"].hide()
+        meta_data_box.addWidget(self.meta_data["progbar"] ,2,0,1,2) 
+
         meta_data_box.setSpacing(20)
         meta_data_box.setContentsMargins(0,0,0,0)
         uiBox.addLayout(meta_data_box, stretch=1)
@@ -161,20 +169,45 @@ class Ui(QtWidgets.QMainWindow):
             self.error_msg.setDetailedText(str(e))
             self.error_msg.exec()
 
+    def updateImage(self,image):
+        self.image_processed = image
+        im = cv2.cvtColor(self.image_processed, cv2.COLOR_BGR2RGB)
+        height, width, _ = im.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(im.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
+        pixmap = QPixmap(qImg).scaled(self.label.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                        Qt.TransformationMode.SmoothTransformation) 
+        # Scale image to fit within label while maintaining aspect ratio
+        # and using smooth transformation for better quality.
+        self.label.setPixmap(pixmap)
+
+    def updateMetaData(self,meta_data):
+        for i,label in enumerate(["Faces Detected","Threshold Area"]):
+            self.meta_data[label].setText(str(meta_data[i]))
+            self.meta_data[label].adjustSize()
+            self.meta_data[label].setBaseSize(self.meta_data[label].size())
+        self.meta_data["progbar"].setMaximum(int(meta_data[0]))
+    
+    def updateProgBar(self,progress):
+        self.meta_data["progbar"].setValue(progress)
+    
+    def throwError(self,e:str):
+        self.error_msg.setInformativeText("Error in processing Image")
+        self.error_msg.setDetailedText(e)
+        self.error_msg.exec()
+
     def processImage(self):
+        print("Called process function")
         try:
             assert type(self.image) != type(None),"No image loaded"
-            self.image_processed = self.image_filter.process_image_array(self.image,self.meta_data) 
-            im = cv2.cvtColor(self.image_processed, cv2.COLOR_BGR2RGB)
-            height, width, _ = im.shape
-            bytesPerLine = 3 * width
-            qImg = QImage(im.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
-            
-            pixmap = QPixmap(qImg).scaled(self.label.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                            Qt.TransformationMode.SmoothTransformation) 
-            # Scale image to fit within label while maintaining aspect ratio
-            # and using smooth transformation for better quality.
-            self.label.setPixmap(pixmap)
+            self.meta_data["progbar"].show()
+            self.image_filter.image = self.image.copy() 
+            worker = Worker(self.image_filter.process_image)
+            worker.signals.final_image.connect(self.updateImage)
+            worker.signals.meta_data.connect(self.updateMetaData)
+            worker.signals.progress.connect(self.updateProgBar)
+            worker.signals.error.connect(self.throwError)
+            self.threadpool.start(worker)
 
         except Exception as e:
             self.error_msg.setInformativeText("Error in processing Image")
@@ -196,6 +229,12 @@ class Ui(QtWidgets.QMainWindow):
     def update_threshold_factor(self,value):
         self.slider_labels['threshold_factor'].setNum(value)
         self.image_filter.threshold_factor=value
+
+    def signal_accept(self, msg):
+        self.pbar.setValue(int(msg))
+        if self.pbar.value() == 99:
+            self.pbar.setValue(0)
+            self.btn.setEnabled(True)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
