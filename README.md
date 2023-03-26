@@ -80,8 +80,14 @@ You can run the dockerized version of the application directly:
 $ docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix vinayak1998th/face_filter:latest
 ```
 
-**Note:**
-For the docker version to run, you have to open disply control first. On unix machines the following should work:
+### Notes:
+1. For the docker version to run, you have to open disply control first. On unix machines the following should work:
 ```shelll
 $ xhost +
 ```
+
+2. To passthrough file access use the '-v' flag to pass any existing image dir into the docker container. Ex:
+```shell
+$ docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /home/usr/Pictures:/home/usr/Pictures vinayak1998th/face_filter:latest
+```
+This will mount the '/home/usr/Pictures' directory into the docker container with the same path
