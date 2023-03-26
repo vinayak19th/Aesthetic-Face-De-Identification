@@ -1,5 +1,5 @@
 # Scalable Aesthetic-Preserving Face De-Identification
-A tensorflow and ML-kit based app to automatically identify people in background of photographs using face detection and applies an aesthetic preserving filter to protect privacy
+A scalable approach protect the privacy of people in the background of the frame via a face de-identification filter. This filter is also developed to be aesthetic and semantic preserving. The filter is under development and we have a desktop and android version to test the filter.
 
 <b><i>Tech Stack</i></b>
 <p align="left">
