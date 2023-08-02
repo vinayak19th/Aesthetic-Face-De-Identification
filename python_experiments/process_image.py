@@ -1,10 +1,11 @@
+import argparse
+
 import cv2
-from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.cluster import MiniBatchKMeans
 from tqdm import tqdm
-import argparse
-from PyQt6.QtCore import pyqtSignal
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='Example script using argparse.')
@@ -52,7 +53,7 @@ class ImageFilter:
 
     def __cluster(self,im):
         im = im.reshape((im.shape[0] * im.shape[1], 3))
-        km = KMeans(n_clusters=self.n_clusters, random_state=0)
+        km = MiniBatchKMeans(n_clusters=self.n_clusters, random_state=0)
         km.fit(im)
 
         counts = {}
@@ -66,17 +67,6 @@ class ImageFilter:
             if rgb not in counts[km.labels_[i]]:
                 counts[km.labels_[i]][rgb] = 0
             counts[km.labels_[i]][rgb] += 1
-
-        # remap representative to most prominent color for ea label
-        for label, hist in counts.items():
-            flat = sorted(hist.items(), key=lambda x: x[1], reverse=True)
-            col = 0
-            # # Soften Edges
-            # if sum(flat[0][0])>600:
-            #     reps[label] = reps[label-1]
-            # else:
-            reps[label] = flat[0][0]
-        # print(reps)
         return km.cluster_centers_, km.labels_
     
     def __remap_colors(self,im, reps, labels):
@@ -117,32 +107,34 @@ class ImageFilter:
         images = self.processed_image.copy()
         # show(im)
         faces,images = self.__get_crops(images)
-        threshold= np.max(self.vector_area(faces))/self.threshold_factor
-        print("Threshold=",threshold)
-        for i in tqdm(range(len(images))):
-            if(faces[i][2]*faces[i][3] <= threshold):
-                im = images[i]
-                #Blurring
-                im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
-                #Clustering around {args.n_clusters} colors
-                reps, labels = self.__cluster(im)
+        face_areas = self.vector_area(faces)
+        threshold= np.max(face_areas)/self.threshold_factor
+        filtered = np.argwhere(face_areas<=threshold).flatten()
+        del face_areas
+        print("Threshold=",threshold,"| Faces to Process",len(filtered))
+        for i in tqdm(filtered):
+            im = images[i]
+            #Blurring
+            im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
+            #Clustering around {args.n_clusters} colors
+            reps, labels = self.__cluster(im)
 
-                #Remapping image to representative colors
-                im = self.__remap_colors(im, reps, labels)
-                
-                #Finding contours with area gate {args.min_area}
-                contours = self.__find_contours(im, reps)
+            #Remapping image to representative colors
+            im = self.__remap_colors(im, reps, labels)
+            
+            #Finding contours with area gate {args.min_area}
+            contours = self.__find_contours(im, reps)
 
-                #Drawing
-                canvas = np.zeros(im.shape, np.uint8)
-                # show(im)
-                for _, cont, rep in contours:
-                    approx = cv2.approxPolyDP(cont, self.poly_epsilon, True)
-                    cv2.drawContours(canvas, [approx], -1, rep, -1)
-                
-                canvas = self.__black_inpaint(canvas)
-                self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
-                
+            #Drawing
+            canvas = np.zeros(im.shape, np.uint8)
+            # show(im)
+            for _, cont, rep in contours:
+                approx = cv2.approxPolyDP(cont, self.poly_epsilon, True)
+                cv2.drawContours(canvas, [approx], -1, rep, -1)
+            
+            canvas = self.__black_inpaint(canvas)
+            self.processed_image = self.__smooth_blend(canvas,self.processed_image, faces[i])
+                            
 if __name__ == "__main__":
     args = get_args()
     image_fitler = ImageFilter()
