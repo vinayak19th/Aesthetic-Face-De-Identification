@@ -1,11 +1,14 @@
 import sys
-from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QFileDialog, QLabel, QPushButton, QSlider,QVBoxLayout, QHBoxLayout, QGridLayout, QProgressBar
-from PyQt6.QtGui import QPixmap,QImage
-from PyQt6.QtCore import Qt, QThreadPool
-from PyQt6.QtWidgets import QMessageBox
+
 import cv2
 from image_filter_bg import ImageFilter, Worker
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt, QThreadPool
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtWidgets import (QFileDialog, QGridLayout, QHBoxLayout, QLabel,
+                             QMessageBox, QProgressBar, QPushButton, QSlider,
+                             QVBoxLayout)
+
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -52,7 +55,7 @@ class Ui(QtWidgets.QMainWindow):
         self.slider_labels = {}
 
         self.meta_data = {}
-        for i,label in enumerate(["Faces Detected","Threshold Area"]):
+        for i,label in enumerate(["Faces Detected","Faces To Process","Threshold Area"]):
             meta_label = QLabel(label,self)
             meta_label.adjustSize()
             meta_label.setFixedSize(meta_label.size())
@@ -182,7 +185,7 @@ class Ui(QtWidgets.QMainWindow):
         self.label.setPixmap(pixmap)
 
     def updateMetaData(self,meta_data):
-        for i,label in enumerate(["Faces Detected","Threshold Area"]):
+        for i,label in enumerate(["Faces Detected","Faces To Process","Threshold Area"]):
             self.meta_data[label].setText(str(meta_data[i]))
             self.meta_data[label].adjustSize()
             self.meta_data[label].setBaseSize(self.meta_data[label].size())

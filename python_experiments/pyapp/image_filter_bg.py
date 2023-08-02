@@ -116,7 +116,7 @@ class ImageFilter():
     
     def __cluster(self,im):
         im = im.reshape((im.shape[0] * im.shape[1], 3))
-        km = MiniBatchKMeans(n_clusters=n_clusters,batch_size=512, random_state=0,max_iter=50)
+        km = MiniBatchKMeans(n_clusters=self.n_clusters,batch_size=512, random_state=0,max_iter=50)
         km.fit(im)
         return km.cluster_centers_, km.labels_
     
@@ -158,40 +158,43 @@ class ImageFilter():
         images = self.image.copy()
         # show(im)
         faces,images = self.__get_crops(images)
-        threshold= np.max(self.vector_area(faces))/self.threshold_factor
-        meta_data.emit((len(faces),threshold))
-        for i in range(len(images)):
+        face_areas = self.vector_area(faces)
+        threshold= np.max(face_areas)/self.threshold_factor
+        filtered = np.argwhere(face_areas<=threshold).flatten()
+        del face_areas
+        meta_data.emit((len(faces),len(filtered),threshold))
+        for i in filtered:
             progress.emit(i)
-            if(faces[i][2]*faces[i][3] <= threshold):
-                im = images[i]
-                #Blurring
-                downsampled:bool = False
-                if(faces[i][2]*faces[i][3] < 10000):
-                    downsampled = True
-                    face_size = im.shape[:2]
-                    im = cv2.pyrDown(im)
-                im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
-                #Clustering around {args.n_clusters} colors
-                reps, labels = self.__cluster(im)
+            im = images[i]
+            #Blurring
+            downsampled:bool = False
+            if(any(dim>1000 for dim in faces[i][2:])):
+                downsampled = True
+                face_size = im.shape[:2]
+                im = cv2.pyrDown(im)
+            im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
+            #Clustering around {args.n_clusters} colors
+            reps, labels = self.__cluster(im)
 
-                #Remapping image to representative colors
-                im = self.__remap_colors(im, reps, labels)
-                
-                #Finding contours with area gate {args.min_area}
-                contours = self.__find_contours(im, reps)
+            #Remapping image to representative colors
+            im = self.__remap_colors(im, reps, labels)
+            
+            #Finding contours with area gate {args.min_area}
+            contours = self.__find_contours(im, reps)
 
-                #Drawing
-                canvas = np.zeros(im.shape, np.uint8)
-                # show(im)
-                for _, cont, rep in contours:
-                    approx = cv2.approxPolyDP(cont, self.poly_epsilon, True)
-                    cv2.drawContours(canvas, [approx], -1, rep, -1)
-                
-                canvas = self.__black_inpaint(canvas)
-                if(downsampled):
-                    canvas=cv2.pyrUp(canvas)
-                    canvas=cv2.resize(canvas,face_size)
+            #Drawing
+            canvas = np.zeros(im.shape, np.uint8)
+            # show(im)
+            for _, cont, rep in contours:
+                approx = cv2.approxPolyDP(cont, self.poly_epsilon, True)
+                cv2.drawContours(canvas, [approx], -1, rep, -1)
+            
+            canvas = self.__black_inpaint(canvas)
 
-                self.image = self.__smooth_blend(canvas,self.image, faces[i])
+            if(downsampled):
+                canvas=cv2.pyrUp(canvas)
+                canvas=cv2.resize(canvas,face_size)
+
+            self.image = self.__smooth_blend(canvas,self.image, faces[i])
         progress.emit(len(faces))
         return self.image
