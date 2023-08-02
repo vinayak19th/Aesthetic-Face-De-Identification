@@ -1,9 +1,12 @@
+import sys
+import traceback
+
 import cv2
-from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
-import traceback, sys
-from PyQt6.QtCore import pyqtSignal, QObject,QRunnable, pyqtSlot
+from PyQt6.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
+from sklearn.cluster import MiniBatchKMeans
+
 
 class WorkerSignals(QObject):
     '''
@@ -113,31 +116,8 @@ class ImageFilter():
     
     def __cluster(self,im):
         im = im.reshape((im.shape[0] * im.shape[1], 3))
-        km = KMeans(n_clusters=self.n_clusters, random_state=0)
+        km = MiniBatchKMeans(n_clusters=n_clusters,batch_size=512, random_state=0,max_iter=50)
         km.fit(im)
-
-        counts = {}
-        reps = km.cluster_centers_
-
-        # count colors per label
-        for i in range(len(im)):
-            if km.labels_[i] not in counts:
-                counts[km.labels_[i]] = {}
-            rgb = tuple(im[i])
-            if rgb not in counts[km.labels_[i]]:
-                counts[km.labels_[i]][rgb] = 0
-            counts[km.labels_[i]][rgb] += 1
-
-        # remap representative to most prominent color for ea label
-        for label, hist in counts.items():
-            flat = sorted(hist.items(), key=lambda x: x[1], reverse=True)
-            col = 0
-            # # Soften Edges
-            # if sum(flat[0][0])>600:
-            #     reps[label] = reps[label-1]
-            # else:
-            reps[label] = flat[0][0]
-        # print(reps)
         return km.cluster_centers_, km.labels_
     
     def __remap_colors(self,im, reps, labels):
@@ -185,6 +165,11 @@ class ImageFilter():
             if(faces[i][2]*faces[i][3] <= threshold):
                 im = images[i]
                 #Blurring
+                downsampled:bool = False
+                if(faces[i][2]*faces[i][3] < 10000):
+                    downsampled = True
+                    face_size = im.shape[:2]
+                    im = cv2.pyrDown(im)
                 im = cv2.GaussianBlur(im,(self.blur_kernel,self.blur_kernel),0)
                 #Clustering around {args.n_clusters} colors
                 reps, labels = self.__cluster(im)
@@ -203,6 +188,10 @@ class ImageFilter():
                     cv2.drawContours(canvas, [approx], -1, rep, -1)
                 
                 canvas = self.__black_inpaint(canvas)
+                if(downsampled):
+                    canvas=cv2.pyrUp(canvas)
+                    canvas=cv2.resize(canvas,face_size)
+
                 self.image = self.__smooth_blend(canvas,self.image, faces[i])
         progress.emit(len(faces))
         return self.image
