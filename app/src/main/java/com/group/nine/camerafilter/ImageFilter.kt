@@ -1,8 +1,8 @@
 package com.group.nine.camerafilter
 
+import android.R.string
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import org.opencv.android.Utils
 import org.opencv.core.*
@@ -18,27 +18,54 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     var min_area = amin_area
     var poly_epsilon = apoly_epsilon
     val maskMat : Mat = loadMask(context)
-    fun loadMask(context: Context):Mat{
-        Log.d("MaskLoad","Loading Mask")
-        var maskMat : Mat = Mat()
+    fun loadMask(context: Context):Mat {
+        Log.d("MaskLoad", "Loading Mask")
+        var maskMat: Mat = Mat()
         try {
             val inStream: InputStream = context.assets.open("mask.png")
             val buffer = inStream.readBytes()
-            maskMat = Imgcodecs.imdecode(MatOfByte(*buffer),Imgcodecs.IMREAD_GRAYSCALE)
-        } catch (e:FileNotFoundException){
+            maskMat = Imgcodecs.imdecode(MatOfByte(*buffer), Imgcodecs.IMREAD_GRAYSCALE)
+//            Imgproc.cvtColor(maskMat,maskMat,Imgproc.COLOR_RGBA2BGR)
+        } catch (e: FileNotFoundException) {
             println(e)
             null
         }
-        maskMat.convertTo(maskMat, CvType.CV_32FC1, 1.0 / 255.0)
+        maskMat.convertTo(maskMat, CvType.CV_32FC1)
+//        maskMat.convertTo(maskMat, CvType.CV_32FC3, 1.0 / 255.0)
+        Core.divide(maskMat, Scalar(255.0),maskMat)
+        Log.d("MaskLoad","maskMat Size "+maskMat.size()+"| Channels:"+maskMat.channels()+"| type:"+maskMat.type())
+        val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
+        val channels = mutableListOf(maskMat, maskMat, maskMat)
+        Core.merge(channels, maskMat3channel)
+        channels.forEach {
+            it.release()
+        }
+        maskMat.release()
+        return maskMat3channel
+    }
+
+//        fun loadMask(context: Context):Mat{
+//            Log.d("MaskLoad","Loading Mask")
+//            var maskMat : Mat = Mat()
+//            try {
+//                Log.d("MaskLoad","Assets:"+context.assets.list("").toString())
+//                val inStream: InputStream = context.assets.open("mask.png")
+//                val buffer = inStream.readBytes()
+//                maskMat = Imgcodecs.imdecode(MatOfByte(*buffer),Imgcodecs.IMREAD_GRAYSCALE)
+//            } catch (e:FileNotFoundException){
+//                println(e)
+//                null
+//            }
+//            maskMat.convertTo(maskMat, CvType.CV_32FC1, 1.0 / 255.0)
 //        val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
-//        val channels = mutableListOf(maskMat, maskMat, maskMat)
+//        val channels = mutableListOf(maskMat.clone(), maskMat.clone(), maskMat.clone())
 //        Core.merge(channels, maskMat3channel)
 //        channels.forEach {
 //            it.release()
 //        }
 //        maskMat.release()
-        return maskMat
-    }
+//        return maskMat3channel
+//    }
 
     fun processImage(face:Bitmap):Bitmap {
         var imageMat = Mat()
@@ -138,82 +165,41 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         val buffer = FloatArray(rows * cols * channels)
         mat.get(0, 0, buffer)
 
-        for (i in 0 until rows) {
-            for (j in 0 until cols) {
-                val index = (i * cols + j) * channels
-                val pixel = buffer.slice(index until index + channels).joinToString(", ")
-                Log.d(tag, "Pixel ($i, $j): $pixel")
-            }
-        }
+        val i = 1
+        val j = 2
+        val index = (i * cols + j) * channels
+        val pixel = buffer.slice(index until index + channels).joinToString(", ")
+        Log.d(tag, "Pixel ($i, $j): $pixel")
+//        for (i in 0 until rows) {
+//            for (j in 0 until cols) {
+//                val index = (i * cols + j) * channels
+//                val pixel = buffer.slice(index until index + channels).joinToString(", ")
+//                Log.d(tag, "Pixel ($i, $j): $pixel")
+//            }
+//        }
     }
+
     fun blendImages(filterMat: Mat,imageMat: Mat):Mat{
+        Log.d("Blend","Starting Blend")
         filterMat.convertTo(filterMat, CvType.CV_32FC3)
         imageMat.convertTo(imageMat, CvType.CV_32FC3)
 
-        var maskSized : Mat = Mat()
-        Imgproc.resize(maskMat,maskSized,imageMat.size())
-        maskSized.convertTo(maskSized,CvType.CV_32FC1)
-        val  sourceSplit : List<Mat> = ArrayList(3)
-        val  filterSplit : List<Mat> = ArrayList(3)
-        Core.split(imageMat,sourceSplit)
-        Core.split(filterMat,filterSplit)
-        Log.d("Blend","Split Mats")
-        var maskInverted : Mat = Mat()
-        maskInverted.convertTo(maskInverted, CvType.CV_32FC1)
-        Core.absdiff(maskSized,Scalar(1.0),maskInverted)
-//        Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels()+"| type:"+maskSized.type())
-//        Log.d("Blend","maskInverted Size "+maskInverted.size()+"| Channels:"+maskInverted.channels()+"| type:"+maskInverted.type())
-        Log.d("Blend","Subtracted to create maskinverted")
-        sourceSplit.forEach {
-            Core.multiply(it,maskSized,it)
-        }
-        filterSplit.forEach {
-            Core.multiply(it,maskInverted,it)
-        }
-        Log.d("Blend","Masks multiplied")
-        Core.merge(sourceSplit,maskSized)
-        Core.merge(filterSplit,maskInverted)
-        Log.d("Blend","Merged images")
-
-        Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels()+"| type:"+maskSized.toString())
-        Log.d("Blend","maskInverted Size "+maskInverted.size()+"| Channels:"+maskInverted.channels()+"| type:"+maskInverted.toString())
-
-        Core.add(maskSized,maskInverted,imageMat)
-        Log.d("Blend","Releasing resources")
-        maskInverted.release()
-        maskSized.release()
-        sourceSplit.forEach {
-            it.release()
-        }
-        filterSplit.forEach {
-            it.release()
-        }
-        Log.d("Blend","Returning result")
-        imageMat.convertTo(imageMat,CvType.CV_8UC3)
-        return imageMat
-    }
-
-    fun blendImages2(filterMat: Mat,imageMat: Mat):Mat{
-        Log.d("Blend","Starting Blend")
-////        Imgproc.cvtColor(filterMat,filterMat,Imgproc.COLOR_RGBA2RGB)
-        filterMat.convertTo(filterMat, maskMat.type())
-////        Imgproc.cvtColor(imageMat,imageMat,Imgproc.COLOR_RGBA2RGB)
-        imageMat.convertTo(imageMat, maskMat.type())
-
-        Log.d("Blend","Filter Size "+filterMat.size()+"| Channels:"+filterMat.channels()+"| Type:"+CvType.depth(filterMat.type()))
-        Log.d("Blend","Input Size "+imageMat.size()+"| Channels:"+imageMat.channels()+"| Type:"+CvType.depth(imageMat.type()))
-        Log.d("Blend","Mask Size "+maskMat.size()+"| Channels:"+maskMat.channels()+"| Type:"+CvType.depth(maskMat.type()))
+        Log.d("Blend","Filter Size "+filterMat.size()+"| Channels:"+filterMat.channels()+"| Type:"+filterMat.type())
+        Log.d("Blend","Input Size "+imageMat.size()+"| Channels:"+imageMat.channels()+"| Type:"+imageMat.type())
+        Log.d("Blend","Mask Size "+maskMat.size()+"| Channels:"+maskMat.channels()+"| Type:"+maskMat.type())
 
         var maskSized : Mat = Mat()
         Imgproc.resize(maskMat,maskSized,imageMat.size())
-        maskMat.convertTo(maskMat, maskMat.type())
+//        maskMat.convertTo(maskMat, maskMat.type())
 //        printMatToLogcat("maskedMat",maskSized)
-        Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels())
+        Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels() +"| Type:"+maskSized.type())
+        printMatToLogcat("Mat Sized",maskSized)
         Core.multiply(imageMat,maskSized,imageMat)
 
         var maskInverted : Mat = maskSized.clone()
-        Core.subtract(Mat.ones(maskSized.size(),maskSized.type()),maskSized,maskInverted)
-        Log.d("Blend","maskInverted Size "+maskInverted.size()+"| Channels:"+maskInverted.channels())
+        Core.absdiff(maskSized,Scalar(1.0,1.0,1.0),maskInverted)
+        Log.d("Blend","maskInverted Size "+maskInverted.size()+"| Channels:"+maskInverted.channels() +"| Type:"+maskInverted.type())
+        printMatToLogcat("Inverted Mat",maskInverted)
         Core.multiply(filterMat,maskInverted,filterMat)
 
         maskInverted.release()
