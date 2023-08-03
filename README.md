@@ -23,7 +23,7 @@ https://user-images.githubusercontent.com/31789203/205481780-cd96bfdf-5b0b-4ff9-
 
 ## App Description:
 
-You can download the app apk from [here](https://drive.google.com/file/d/1PnWSjSWbt6ZpRP1wKES2A8v4lROg90v7/view?usp=share_link)
+You can download the app apk from [here](https://github.com/vinayak19th/Aesthetic-Face-De-Identification/releases/)
 
 ### 1. <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/mobile.svg" width="20" height="20"> App UI
 
