@@ -30,7 +30,7 @@ You can download the app apk from [here](https://github.com/vinayak19th/Aestheti
 <table>
     <tbody>
     <tr>
-        <td rowspan=5 style="border:0px;">
+        <td rowspan=6 style="border:0px;">
             <img src="./readme_images/UI.png"><br>
             <i>Image Process Screen</i>
         </td>
@@ -53,12 +53,17 @@ You can download the app apk from [here](https://github.com/vinayak19th/Aestheti
     </tr>    
     <tr>
         <td>
-            <b>Cluser Size</b> : Defines the number of clusters or the number of colors the images is quantized to. The lower the value the more colors in the image. 
+            <b>N_Clusers</b> : Defines the number of clusters or the number of colors the images is quantized to. The lower the value the more colors in the image. 
+        </td>
+    </tr>
+     <tr>
+        <td>
+            <b>Min Area</b> : Defines the minimum area of the contour to be drawn.
         </td>
     </tr>
     <tr>
         <td>
-            <b>Face Detail</b> : Defines the "approximation accuracy" or the maximum distance between the original curve and its approximation.<br>
+            <b>Poly Epsilon</b> : Defines the "approximation accuracy" or the maximum distance between the original curve and its approximation.<br>
             You can read more <a href="https://docs.opencv.org/3.4/dc/dcf/tutorial_js_contour_features.html">here</a>
         </td>
     </tr>
