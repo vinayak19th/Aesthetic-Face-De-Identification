@@ -31,7 +31,6 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
             null
         }
         maskMat.convertTo(maskMat, CvType.CV_32FC1)
-//        maskMat.convertTo(maskMat, CvType.CV_32FC3, 1.0 / 255.0)
         Core.divide(maskMat, Scalar(255.0),maskMat)
         Log.d("MaskLoad","maskMat Size "+maskMat.size()+"| Channels:"+maskMat.channels()+"| type:"+maskMat.type())
         val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
@@ -43,29 +42,6 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         maskMat.release()
         return maskMat3channel
     }
-
-//        fun loadMask(context: Context):Mat{
-//            Log.d("MaskLoad","Loading Mask")
-//            var maskMat : Mat = Mat()
-//            try {
-//                Log.d("MaskLoad","Assets:"+context.assets.list("").toString())
-//                val inStream: InputStream = context.assets.open("mask.png")
-//                val buffer = inStream.readBytes()
-//                maskMat = Imgcodecs.imdecode(MatOfByte(*buffer),Imgcodecs.IMREAD_GRAYSCALE)
-//            } catch (e:FileNotFoundException){
-//                println(e)
-//                null
-//            }
-//            maskMat.convertTo(maskMat, CvType.CV_32FC1, 1.0 / 255.0)
-//        val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
-//        val channels = mutableListOf(maskMat.clone(), maskMat.clone(), maskMat.clone())
-//        Core.merge(channels, maskMat3channel)
-//        channels.forEach {
-//            it.release()
-//        }
-//        maskMat.release()
-//        return maskMat3channel
-//    }
 
     fun processImage(face:Bitmap):Bitmap {
         var imageMat = Mat()
@@ -81,7 +57,7 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
             Log.d("Main","Downsampling")
         }
         val (centers,labels) = kmeansProcess(filterMat)
-        Core.multiply(centers,Scalar(255.0),centers)
+//        Core.multiply(centers,Scalar(255.0,255.0,255.0),centers)
         filterMat = reColorImage(filterMat,centers,labels)
 //        BGR - filterMat
         labels.release()
@@ -91,7 +67,7 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         centers.release()
         Imgproc.cvtColor(imageMat,imageMat,Imgproc.COLOR_RGBA2RGB)
         Log.d("Main","imageMat type"+imageMat.toString())
-//        filterMat = inPaint(filterMat)
+        filterMat = inPaint(filterMat)
         if(downsampled){
             Imgproc.pyrUp(filterMat,filterMat,Size(filterMat.cols() * 2.0, filterMat.rows() * 2.0))
             Imgproc.resize(filterMat,filterMat,face_size)
@@ -105,25 +81,26 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     }
     fun kmeansProcess(filterMat:Mat):Pair<Mat,Mat> {
         Imgproc.cvtColor(filterMat, filterMat, Imgproc.COLOR_BGRA2BGR)
-        val reshaped_image: Mat = filterMat.reshape(1, filterMat.cols() * filterMat.rows())
-        val reshaped_image32f = Mat()
-        reshaped_image.convertTo(reshaped_image32f, CvType.CV_32F, 1.0 / 255.0)
-        reshaped_image.release()
+        var reshaped_image: Mat = filterMat.reshape(1, filterMat.cols() * filterMat.rows())
+//        val reshaped_image32f = Mat()
+        reshaped_image.convertTo(reshaped_image,CvType.CV_32F)
+//        reshaped_image.convertTo(reshaped_image32f, CvType.CV_32F, 1.0 / 255.0)
+//        reshaped_image.release()
         val labels = Mat()
-        val criteria = TermCriteria(TermCriteria.COUNT, 100, 1.toDouble())
+        val criteria = TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 10, 1.0)
         val centers = Mat()
         val attempts = 3
-        Log.d("Kmeans","Clustering with Cluster Size "+n_clusters.toString())
+        Log.d("Kmeans", "Clustering with Cluster Size $n_clusters")
         Core.kmeans(
-            reshaped_image32f,
+            reshaped_image,
             n_clusters,
             labels,
             criteria,
             attempts,
-            Core.KMEANS_PP_CENTERS,
+            Core.KMEANS_RANDOM_CENTERS,
             centers
         )
-        reshaped_image32f.release()
+        reshaped_image.release()
 //        Log.d("KClusters","Labels Size | "+labels.size().toString())
 //        Log.d("KClusters","Centers Size | "+centers.size().toString())
 //        Log.d("KClusters","Flattened Image | "+reshaped_image.size().height.toString())
@@ -134,15 +111,11 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     }
 
     fun reColorImage(filterMat: Mat,centers: Mat,labels:Mat):Mat{
-        val value : DoubleArray = DoubleArray(3)
         var r : Int = 0
         for(i:Int in 0 until filterMat.rows()){
             for(j:Int in 0 until filterMat.cols()){
                 var valindex : Int = labels.get(r,0).get(0).toInt()
-                value.set(0,centers.get(valindex,0).get(0))
-                value.set(1,centers.get(valindex,1).get(0))
-                value.set(2,centers.get(valindex,2).get(0))
-                filterMat.put(i,j,value.get(0),value.get(1),value.get(2))
+                filterMat.put(i,j,centers.get(valindex,0)[0],centers.get(valindex,1)[0],centers.get(valindex,2)[0])
                 r++
             }
         }
