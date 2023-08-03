@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.util.Log
+import android.widget.ProgressBar
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
@@ -97,6 +98,11 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         Utils.bitmapToMat(face, imageMat)
         var filterMat : Mat = Mat()
         imageMat.copyTo(filterMat)
+        var downsampled: Boolean = false;
+        if(filterMat.width()>1000 ||filterMat.height()>1000) {
+            Imgproc.pyrDown(filterMat, filterMat)
+            downsampled = true
+        }
         val (centers,labels) = kmeansProcess(filterMat)
         Core.multiply(centers,Scalar(255.0),centers)
         filterMat = reColorImage(filterMat,centers,labels)
@@ -105,6 +111,9 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         filterMat = getContours(filterMat,centers)
         Imgproc.cvtColor(imageMat,imageMat,Imgproc.COLOR_RGBA2RGB)
         Log.d("Main","imageMat type"+imageMat.toString())
+        if(downsampled){
+            Imgproc.pyrUp(filterMat,filterMat)
+        }
         imageMat = blendImages(filterMat,imageMat)
         filterMat.release()
         val processedFace : Bitmap = face.copy(face.config, true)
@@ -120,7 +129,7 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         val labels = Mat()
         val criteria = TermCriteria(TermCriteria.COUNT, 100, 1.toDouble())
         val centers = Mat()
-        val attempts = 1
+        val attempts = 3
         Log.d("Kmeans","Clustering with Cluster Size "+n_clusters.toString())
         Core.kmeans(
             reshaped_image32f,
@@ -217,5 +226,8 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     }
     fun setPolyEpsilon(apoly_epsilon:Double){
         poly_epsilon = apoly_epsilon
+    }
+    fun setMinArea(amin_area: Double){
+        min_area = amin_area
     }
 }
