@@ -1,6 +1,5 @@
 package com.group.nine.camerafilter
 
-import android.R.attr.data
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.*
@@ -8,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.ContactsContract.CommonDataKinds.Im
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,13 +14,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -38,7 +36,7 @@ import java.io.OutputStream
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-class SecondFragment : Fragment() {
+class ImageProcessor : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
     private lateinit var srcView : ImageView
@@ -46,6 +44,7 @@ class SecondFragment : Fragment() {
     private lateinit var imageURI : Uri
     private lateinit var bitImage : Bitmap
     private lateinit var numFacesLabel : TextView
+    private lateinit var progressWheel : ProgressBar
     private var threshholdFactor : Int = 5
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -73,6 +72,7 @@ class SecondFragment : Fragment() {
         srcView = view.findViewById(R.id.srcImage)
         outView = view.findViewById(R.id.outImage)
         numFacesLabel = view.findViewById(R.id.number_faces)
+        progressWheel = view.findViewById(R.id.progressWheel)
         filter = ImageFilter(view.context,an_clusters = 5, apoly_epsilon = 4.0)
 
         //Sliders
@@ -83,6 +83,10 @@ class SecondFragment : Fragment() {
         view.findViewById<Slider>(R.id.epsilonSlider).addOnChangeListener { epsilonSlider, value, fromUser ->
             Log.d("Epsilon Slider:","Setting Epsilon to :"+ epsilonSlider.value.toString())
             filter.setPolyEpsilon(value.toDouble())
+        }
+        view.findViewById<Slider>(R.id.areaSlider).addOnChangeListener { areaSlider, value, fromUser ->
+            Log.d("Area Slider:","Setting min area to :"+ areaSlider.value.toString())
+            filter.setMinArea(value.toDouble())
         }
         view.findViewById<Slider>(R.id.threshhold_slider).addOnChangeListener { threshSlider, value, fromUser ->
             Log.d("Epsilon Slider:","Setting Epsilon to :"+ threshSlider.value.toString())
@@ -101,6 +105,7 @@ class SecondFragment : Fragment() {
         //Buttons
 
         view.findViewById<Button>(R.id.process_image).setOnClickListener {
+            progressWheel.visibility = View.VISIBLE
             processImage(faceDetector,view.context)
         }
         binding.saveImage.setOnClickListener {
@@ -163,6 +168,7 @@ class SecondFragment : Fragment() {
                     face.boundingBox.left + face.boundingBox.width(),
                     face.boundingBox.top + face.boundingBox.height()
                 )
+                progressWheel.visibility = View.VISIBLE
                 outImage = filter.processImage(outImage)
                 outFinalImage = overlayer(outFinalImage, outImage, rectangle)
             }
@@ -170,6 +176,7 @@ class SecondFragment : Fragment() {
         activity?.runOnUiThread {
             outView.setImageBitmap(outFinalImage)
             outView.invalidate()
+            progressWheel.visibility = View.GONE
         }
         Log.d("render","Finished Face render")
     }

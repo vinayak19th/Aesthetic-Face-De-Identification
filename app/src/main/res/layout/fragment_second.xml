@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".FirstFragment">
+    tools:context=".ImageLoader">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -33,23 +33,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.60" />
+            app:layout_constraintVertical_bias="0.53" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/previous_activity"
+        <ProgressBar
+            android:id="@id/progressWheel"
+            style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="45dp"
             android:layout_height="55dp"
-            android:backgroundTint="#243B49"
-            android:padding="0dp"
-            android:paddingStart="12dp"
-            app:icon="@drawable/arrow_left_solid"
-            app:iconSize="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.97"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.99" />
+            android:indeterminate="true"
+            android:elevation="2dp"
+            android:indeterminateTint="#3DDC84"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/save_image"
+            app:layout_constraintStart_toStartOf="@+id/save_image"
+            app:layout_constraintVertical_bias="0.1"
+            />
+
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save_image"
@@ -75,24 +74,39 @@
             app:layout_constraintBottom_toTopOf="@+id/previous_activity"
             app:layout_constraintVertical_bias="0.1"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/previous_activity"
+            android:layout_width="45dp"
+            android:layout_height="55dp"
+            android:backgroundTint="#243B49"
+            android:padding="0dp"
+            android:paddingStart="12dp"
+            app:icon="@drawable/arrow_left_solid"
+            app:iconSize="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.97"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.97" />
+
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/configSliders"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="180dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.9"
+            app:layout_constraintHorizontal_bias="0.8"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.98" >
+            app:layout_constraintVertical_bias="0.97" >
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingStart="10dp"
+                android:paddingStart="5dp"
                 android:paddingEnd="10dp"
                 >
-
                 <TextView
                     android:id="@+id/faceText"
                     android:layout_width="wrap_content"
@@ -140,7 +154,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Cluser Size"
+                    android:text="N_clusers"
                     app:layout_constraintBottom_toBottomOf="@+id/clusterSlider"
                     app:layout_constraintEnd_toStartOf="@+id/clusterSlider"
                     app:layout_constraintStart_toStartOf="parent"
@@ -154,7 +168,7 @@
                     android:value="5"
                     android:valueFrom="2"
                     android:valueTo="15"
-                    app:layout_constraintBottom_toBottomOf="@+id/epsilonSlider"
+                    app:layout_constraintBottom_toBottomOf="@+id/areaSlider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.698"
                     app:layout_constraintStart_toStartOf="parent"
@@ -162,11 +176,35 @@
                     app:thumbColor="#7B8991"
                     app:trackColor="#243B49" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Min Area"
+                    app:layout_constraintBottom_toBottomOf="@+id/areaSlider"
+                    app:layout_constraintEnd_toStartOf="@+id/areaSlider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/areaSlider" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@id/areaSlider"
+                    android:layout_width="230dp"
+                    android:layout_height="wrap_content"
+                    android:stepSize="50"
+                    android:value="50"
+                    android:valueFrom="50"
+                    android:valueTo="600"
+                    app:layout_constraintBottom_toBottomOf="@+id/epsilonSlider"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.698"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/clusterSlider"
+                    app:thumbColor="#7B8991"
+                    app:trackColor="#243B49" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Face Detail"
+                    android:text="Poly Epsilon"
                     app:layout_constraintBottom_toBottomOf="@+id/epsilonSlider"
                     app:layout_constraintEnd_toStartOf="@+id/epsilonSlider"
                     app:layout_constraintStart_toStartOf="parent"
@@ -188,6 +226,7 @@
                     app:layout_constraintVertical_bias="1"
                     app:thumbColor="#7B8991"
                     app:trackColor="#243B49" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.appbar.AppBarLayout>
 

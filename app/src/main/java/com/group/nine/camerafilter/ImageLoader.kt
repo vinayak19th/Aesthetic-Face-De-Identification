@@ -16,7 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
 import com.group.nine.camerafilter.databinding.FragmentFirstBinding
@@ -24,7 +23,7 @@ import com.group.nine.camerafilter.databinding.FragmentFirstBinding
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class FirstFragment : Fragment() {
+class ImageLoader : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
 

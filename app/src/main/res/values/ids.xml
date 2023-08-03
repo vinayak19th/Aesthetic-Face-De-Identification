@@ -2,4 +2,7 @@
 <resources>
     <item name="clusterSlider" type="id" />
     <item name="threshhold_slider" type="id" />
+    <item name="areaSlider" type="id" />
+    <item name="epsilonSlider" type="id" />
+    <item name="progressWheel" type="id" />
 </resources>
