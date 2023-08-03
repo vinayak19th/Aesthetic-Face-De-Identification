@@ -25,10 +25,7 @@
     "variantName": "debug",
     "isDebuggableEnabled": true,
     "validAbiList": [
-      "ARMEABI_V7A",
-      "ARM64_V8A",
-      "X86",
-      "X86_64"
+      "ARM64_V8A"
     ],
     "buildTargetSet": [
       "opencv_jni_shared"
@@ -131,6 +128,7 @@
         "rootBuildGradleFolder": "/mnt/d/git/Aesthetic-Face-De-Identification",
         "sdkFolder": "/home/vinayak/Android/Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
+        "ideBuildTargetAbi": "arm64-v8a,armeabi-v7a,armeabi",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },
