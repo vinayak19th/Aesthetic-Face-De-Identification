@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import org.opencv.android.Utils
 import org.opencv.core.*
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import org.opencv.photo.Photo
 import java.io.FileNotFoundException
@@ -17,44 +18,25 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     var min_area = amin_area
     var poly_epsilon = apoly_epsilon
     val maskMat : Mat = loadMask(context)
-//    fun loadMask(context: Context):Mat{
-//        Log.d("MaskLoad","Loading Mask")
-//        var maskMat : Mat = Mat()
-//        try {
-//            val inStream: InputStream = context.assets.open("mask.png")
-//            val buffer = inStream.readBytes()
-//            maskMat = Imgcodecs.imdecode(MatOfByte(*buffer),Imgcodecs.IMREAD_GRAYSCALE)
-//        } catch (e:FileNotFoundException){
-//            println(e)
-//            null
-//        }
-////        maskMat.convertTo(maskMat, CvType.CV_32FC1, 1.0 / 255.0)
-////        val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
-////        val channels = mutableListOf(maskMat, maskMat, maskMat)
-////        Core.merge(channels, maskMat3channel)
-////        channels.forEach {
-////            it.release()
-////        }
-////        maskMat.release()
-//        return maskMat
-//    }
     fun loadMask(context: Context):Mat{
         Log.d("MaskLoad","Loading Mask")
         var maskMat : Mat = Mat()
         try {
             val inStream: InputStream = context.assets.open("mask.png")
-            val bmpFactoryOptions : BitmapFactory.Options = BitmapFactory.Options()
-            bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888
-            val maskBitmap : Bitmap? = BitmapFactory.decodeStream(inStream,null,bmpFactoryOptions)
-            inStream.close()
-            Utils.bitmapToMat(maskBitmap,maskMat)
-            Imgproc.cvtColor(maskMat,maskMat,Imgproc.COLOR_RGB2GRAY)
-            Core.normalize(maskMat,maskMat,0.0,1.0,Core.NORM_MINMAX,CvType.CV_32FC1);
+            val buffer = inStream.readBytes()
+            maskMat = Imgcodecs.imdecode(MatOfByte(*buffer),Imgcodecs.IMREAD_GRAYSCALE)
         } catch (e:FileNotFoundException){
             println(e)
             null
         }
-        Log.d("MaskLoad","Loaded mask")
+        maskMat.convertTo(maskMat, CvType.CV_32FC1, 1.0 / 255.0)
+//        val maskMat3channel = Mat(maskMat.size(), CvType.CV_32FC3)
+//        val channels = mutableListOf(maskMat, maskMat, maskMat)
+//        Core.merge(channels, maskMat3channel)
+//        channels.forEach {
+//            it.release()
+//        }
+//        maskMat.release()
         return maskMat
     }
 
@@ -65,7 +47,7 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         imageMat.copyTo(filterMat)
         var downsampled: Boolean = false;
         Log.d("Main","Image Width: "+filterMat.width().toString()+"| Image Height: "+filterMat.height().toString())
-        var face_size: Size = filterMat.size()
+        val face_size: Size = filterMat.size()
         if(filterMat.width()>1000 || filterMat.height()>1000) {
             Imgproc.pyrDown(filterMat, filterMat, Size(filterMat.cols() / 2.0, filterMat.rows() / 2.0))
             downsampled = true
@@ -74,11 +56,15 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         val (centers,labels) = kmeansProcess(filterMat)
         Core.multiply(centers,Scalar(255.0),centers)
         filterMat = reColorImage(filterMat,centers,labels)
+//        BGR - filterMat
         labels.release()
         Log.d("Main","Calling Cont function")
         filterMat = getContours(filterMat,centers)
+        //        BGR - filterMat
+        centers.release()
         Imgproc.cvtColor(imageMat,imageMat,Imgproc.COLOR_RGBA2RGB)
         Log.d("Main","imageMat type"+imageMat.toString())
+//        filterMat = inPaint(filterMat)
         if(downsampled){
             Imgproc.pyrUp(filterMat,filterMat,Size(filterMat.cols() * 2.0, filterMat.rows() * 2.0))
             Imgproc.resize(filterMat,filterMat,face_size)
@@ -121,7 +107,7 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     }
 
     fun reColorImage(filterMat: Mat,centers: Mat,labels:Mat):Mat{
-        var value : DoubleArray = DoubleArray(3)
+        val value : DoubleArray = DoubleArray(3)
         var r : Int = 0
         for(i:Int in 0 until filterMat.rows()){
             for(j:Int in 0 until filterMat.cols()){
@@ -133,6 +119,15 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
                 r++
             }
         }
+        return filterMat
+    }
+    fun inPaint(filterMat: Mat):Mat{
+        Log.d("Blend","Starting In Paint")
+        var paintMask : Mat = Mat()
+        Core.inRange(filterMat, Scalar(0.0, 0.0, 0.0),Scalar(5.0, 5.0, 5.0),paintMask)
+        Photo.inpaint(filterMat,paintMask,filterMat,1.0,Photo.INPAINT_NS)
+        //        cv2.inpaint(fitler, paint_mask, 1, flags=cv2.INPAINT_TELEA)
+        paintMask.release()
         return filterMat
     }
     fun printMatToLogcat(tag: String, mat: Mat) {
@@ -152,23 +147,16 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         }
     }
     fun blendImages(filterMat: Mat,imageMat: Mat):Mat{
-        Log.d("Blend","Starting Blend")
-        Log.d("Blend","Filter Size "+filterMat.size()+"| Channels:"+filterMat.channels())
-        Log.d("Blend","Input Size "+imageMat.size()+"| Channels:"+imageMat.channels())
-        var paintMask : Mat = Mat()
-        Core.inRange(filterMat, Scalar(0.0, 0.0, 0.0),Scalar(5.0, 5.0, 5.0),paintMask)
-        Photo.inpaint(filterMat,paintMask,filterMat,1.0,Photo.INPAINT_NS)
-        paintMask.release()
-//        cv2.inpaint(fitler, paint_mask, 1, flags=cv2.INPAINT_TELEA)
         filterMat.convertTo(filterMat, CvType.CV_32FC3)
         imageMat.convertTo(imageMat, CvType.CV_32FC3)
 
         var maskSized : Mat = Mat()
         Imgproc.resize(maskMat,maskSized,imageMat.size())
-        val  source_split : List<Mat> = ArrayList(3)
-        val  filter_split : List<Mat> = ArrayList(3)
-        Core.split(imageMat,source_split)
-        Core.split(filterMat,filter_split)
+        maskSized.convertTo(maskSized,CvType.CV_32FC1)
+        val  sourceSplit : List<Mat> = ArrayList(3)
+        val  filterSplit : List<Mat> = ArrayList(3)
+        Core.split(imageMat,sourceSplit)
+        Core.split(filterMat,filterSplit)
         Log.d("Blend","Split Mats")
         var maskInverted : Mat = Mat()
         maskInverted.convertTo(maskInverted, CvType.CV_32FC1)
@@ -176,15 +164,15 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
 //        Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels()+"| type:"+maskSized.type())
 //        Log.d("Blend","maskInverted Size "+maskInverted.size()+"| Channels:"+maskInverted.channels()+"| type:"+maskInverted.type())
         Log.d("Blend","Subtracted to create maskinverted")
-        source_split.forEach {
+        sourceSplit.forEach {
             Core.multiply(it,maskSized,it)
         }
-        filter_split.forEach {
+        filterSplit.forEach {
             Core.multiply(it,maskInverted,it)
         }
         Log.d("Blend","Masks multiplied")
-        Core.merge(source_split,maskSized)
-        Core.merge(filter_split,maskInverted)
+        Core.merge(sourceSplit,maskSized)
+        Core.merge(filterSplit,maskInverted)
         Log.d("Blend","Merged images")
 
         Log.d("Blend","maskSized Size "+maskSized.size()+"| Channels:"+maskSized.channels()+"| type:"+maskSized.toString())
@@ -194,10 +182,10 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
         Log.d("Blend","Releasing resources")
         maskInverted.release()
         maskSized.release()
-        source_split.forEach {
+        sourceSplit.forEach {
             it.release()
         }
-        filter_split.forEach {
+        filterSplit.forEach {
             it.release()
         }
         Log.d("Blend","Returning result")
@@ -206,13 +194,6 @@ class ImageFilter(context: Context,an_clusters:Int = 8, amin_area :Double = 100.
     }
 
     fun blendImages2(filterMat: Mat,imageMat: Mat):Mat{
-        Log.d("Blend","Starting inPaint")
-
-        var paintMask : Mat = Mat()
-        Core.inRange(filterMat, Scalar(0.0, 0.0, 0.0),Scalar(5.0, 5.0, 5.0),paintMask)
-        Photo.inpaint(filterMat,paintMask,filterMat,1.0,Photo.INPAINT_NS)
-        paintMask.release()
-
         Log.d("Blend","Starting Blend")
 ////        Imgproc.cvtColor(filterMat,filterMat,Imgproc.COLOR_RGBA2RGB)
         filterMat.convertTo(filterMat, maskMat.type())
